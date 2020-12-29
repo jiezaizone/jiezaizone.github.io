@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"yoursite.com","root":"/","scheme":"Mist","version":"7.7.2","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="一、背景2020-03-23 08:10:07生产突然系统异常。在系统重新之后恢复暂时恢复使用。一个比较诡异的错误，经过一番排查，最终才定位到问题代码，错误如下： 1234567892020-03-20 08:10:07.039 [http-nio-8050-Acceptor-0] ERROR org.apache.tomcat.util.net.Acceptor - Socket accept">
+<meta property="og:type" content="article">
+<meta property="og:title" content="生产java.io.IOException Too many open files排查过程和解决方案">
+<meta property="og:url" content="http://yoursite.com/2020/03/26/technique-sharing/2020/%E7%94%9F%E4%BA%A7java-io-IOException-Too-many-open-files%E6%8E%92%E6%9F%A5%E8%BF%87%E7%A8%8B%E5%92%8C%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88/index.html">
+<meta property="og:site_name" content="技术分享">
+<meta property="og:description" content="一、背景2020-03-23 08:10:07生产突然系统异常。在系统重新之后恢复暂时恢复使用。一个比较诡异的错误，经过一番排查，最终才定位到问题代码，错误如下： 1234567892020-03-20 08:10:07.039 [http-nio-8050-Acceptor-0] ERROR org.apache.tomcat.util.net.Acceptor - Socket accept">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://yoursite.com/images/20200323100419479.png">
+<meta property="og:image" content="http://yoursite.com/images/20200323094839824.png">
+<meta property="og:image" content="http://yoursite.com/images/20200323094542768.png">
+<meta property="og:image" content="http://yoursite.com/images/20200323102106440.png">
+<meta property="article:published_time" content="2020-03-26T09:05:47.000Z">
+<meta property="article:modified_time" content="2020-03-27T02:15:35.290Z">
+<meta property="article:author" content="Mandy">
+<meta property="article:tag" content="java">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://yoursite.com/images/20200323100419479.png">
+
+<link rel="canonical" href="http://yoursite.com/2020/03/26/technique-sharing/2020/%E7%94%9F%E4%BA%A7java-io-IOException-Too-many-open-files%E6%8E%92%E6%9F%A5%E8%BF%87%E7%A8%8B%E5%92%8C%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>生产java.io.IOException Too many open files排查过程和解决方案 | 技术分享</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">技术分享</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+  <a href="https://github.com/jiezaizone" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/03/26/technique-sharing/2020/%E7%94%9F%E4%BA%A7java-io-IOException-Too-many-open-files%E6%8E%92%E6%9F%A5%E8%BF%87%E7%A8%8B%E5%92%8C%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Mandy">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="技术分享">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          生产java.io.IOException Too many open files排查过程和解决方案
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-03-26 17:05:47" itemprop="dateCreated datePublished" datetime="2020-03-26T17:05:47+08:00">2020-03-26</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-03-27 10:15:35" itemprop="dateModified" datetime="2020-03-27T10:15:35+08:00">2020-03-27</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="一、背景"><a href="#一、背景" class="headerlink" title="一、背景"></a>一、背景</h2><p>2020-03-23 08:10:07生产突然系统异常。<br>在系统重新之后恢复暂时恢复使用。一个比较诡异的错误，经过一番排查，最终才定位到问题代码，错误如下：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">2020-03-20 08:10:07.039 [http-nio-8050-Acceptor-0] ERROR org.apache.tomcat.util.net.Acceptor - Socket accept failed</span><br><span class="line">java.io.IOException: Too many open files</span><br><span class="line">	at sun.nio.ch.ServerSocketChannelImpl.accept0(Native Method)</span><br><span class="line">	at sun.nio.ch.ServerSocketChannelImpl.accept(ServerSocketChannelImpl.java:422)</span><br><span class="line">	at sun.nio.ch.ServerSocketChannelImpl.accept(ServerSocketChannelImpl.java:250)</span><br><span class="line">	at org.apache.tomcat.util.net.NioEndpoint.serverSocketAccept(NioEndpoint.java:446)</span><br><span class="line">	at org.apache.tomcat.util.net.NioEndpoint.serverSocketAccept(NioEndpoint.java:70)</span><br><span class="line">	at org.apache.tomcat.util.net.Acceptor.run(Acceptor.java:95)</span><br><span class="line">	at java.lang.Thread.run(Thread.java:748)</span><br></pre></td></tr></table></figure>
+
+<a id="more"></a>
+
+
+<h2 id="二、第一波排查"><a href="#二、第一波排查" class="headerlink" title="二、第一波排查"></a>二、第一波排查</h2><h3 id="1、问题持续时间"><a href="#1、问题持续时间" class="headerlink" title="1、问题持续时间"></a>1、问题持续时间</h3><p>8:10 - 8：25</p>
+<h3 id="2、错误日志"><a href="#2、错误日志" class="headerlink" title="2、错误日志"></a>2、错误日志</h3><p>第一次出现错误是在</p>
+<figure class="highlight handlebars"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="xml">2020-03-20 08:10:07.039 ITGC [http-nio-8050-Acceptor-0] ERROR org.apache.tomcat.util.net.Acceptor - Socket accept failed</span></span><br><span class="line"><span class="xml">java.io.IOException: Too many open files</span></span><br></pre></td></tr></table></figure>
+
+<p><img src="/images/20200323100419479.png" alt=""></p>
+<h3 id="3、tcp连接数"><a href="#3、tcp连接数" class="headerlink" title="3、tcp连接数"></a>3、tcp连接数</h3><p>8:10:07的时候tcp连接数也是不多的，在200左右非常小，已经过了访问高峰</p>
+<figure class="highlight handlebars"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="xml">netstat -nat|grep -i "8050"|wc -l</span></span><br><span class="line"></span><br><span class="line"><span class="xml">2020-03-20 08:10:05</span></span><br><span class="line"><span class="xml">169</span></span><br><span class="line"><span class="xml">2020-03-20 08:10:07</span></span><br><span class="line"><span class="xml">177</span></span><br><span class="line"><span class="xml">2020-03-20 08:10:09</span></span><br><span class="line"><span class="xml">184</span></span><br><span class="line"><span class="xml">2020-03-20 08:10:11</span></span><br><span class="line"><span class="xml">188</span></span><br><span class="line"><span class="xml">2020-03-20 08:10:13</span></span><br><span class="line"><span class="xml">199</span></span><br></pre></td></tr></table></figure>
+<h3 id="4、句柄打开数"><a href="#4、句柄打开数" class="headerlink" title="4、句柄打开数"></a>4、句柄打开数</h3><p> 对于打开的句柄发现大量未成功释放的文件</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">查看进程打开的资源情况</span><br><span class="line">ls -l /proc/13544/fd/</span><br><span class="line">发现有大量tmpip.db未释放</span><br><span class="line">查看进程打开的tmpip.db 的数量</span><br><span class="line">ls -l /proc/13544/fd/ | grep tmpip.db |wc -l</span><br><span class="line">ls -l /proc/13544/fd/ | grep tmpip.db</span><br></pre></td></tr></table></figure>
+
+<p>  <img src="/images/20200323094839824.png" alt=""><br>附上：<br>查看进程打卡的各个资源数量排序前八位</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">lsof -p 13544 |awk <span class="string">'&#123;print $9&#125;'</span>| sort|uniq -c |sort -nr | head -n 8</span><br></pre></td></tr></table></figure>
+<h3 id="5、-分析"><a href="#5、-分析" class="headerlink" title="5、 分析"></a>5、 分析</h3><p>目前除了重启应用解决外，具体原因还未确认</p>
+<p>1、当时的打卡人数每分钟不超过20人。</p>
+<p>2、对于tcp连接是有记录实时日志的，连接数不到200。</p>
+<p>3、对于当前打开文件数量是没有记录的。13544是进程pid，可以 ps -ef |grep java 查看或者直接 jps 查看。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">ls -l /proc/13544/fd/  | wc -l</span><br></pre></td></tr></table></figure>
+
+<p>4、Linux的文件句柄数设置是正常的。ulimit –n 是65534<br>5、根据上面步骤4，看得出有大量未释放的。</p>
+<h3 id="6、结论"><a href="#6、结论" class="headerlink" title="6、结论"></a>6、结论</h3><p>因为持续了很多天没有发布重启过应用，在累计几周的情况下。应用突然崩溃。</p>
+<p>1、打开的文件数没有做日志记录。在文件打开关闭有问题上面不排除有异常，因为lsof查看到每天有打开/tmpip.db文件但是一直未正确关闭，导致累计。</p>
+<p>2、属于累计达到一定量之后崩溃的系统，那么在jvm上面也不排除有堆栈异常导致。</p>
+<p>3、其他异常也正在排查</p>
+<h2 id="三、第二波排查"><a href="#三、第二波排查" class="headerlink" title="三、第二波排查"></a>三、第二波排查</h2><h3 id="1、分析"><a href="#1、分析" class="headerlink" title="1、分析"></a>1、分析</h3><p>根据以上结论进行第二波：<br>首先针对最多未释放的资源tmpip.db进行排查，因为代码里面日志记录代码有使用该文件。每次打卡都会插入日志，日志里面记录ip地址解析对应的中文地址会使用 tmpip.db，接着进行排查。</p>
+<p>查看每个用户允许打开的最大文件数  ulimit -a 或者 ulimit -n 查看<br>open files                      (-n) 65534 </p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">65534</span><br><span class="line">[root@CN07ATT01NGX01V ~]<span class="comment">#  ulimit -a</span></span><br><span class="line">core file size          (blocks, -c) 0</span><br><span class="line">data seg size           (kbytes, -d) unlimited</span><br><span class="line">scheduling priority             (-e) 0</span><br><span class="line">file size               (blocks, -f) unlimited</span><br><span class="line">pending signals                 (-i) 14996</span><br><span class="line">max locked memory       (kbytes, -l) 64</span><br><span class="line">max memory size         (kbytes, -m) unlimited</span><br><span class="line">open files                      (-n) 65534  </span><br><span class="line">pipe size            (512 bytes, -p) 8</span><br><span class="line">POSIX message queues     (bytes, -q) 819200</span><br><span class="line">real-time priority              (-r) 0</span><br><span class="line">stack size              (kbytes, -s) 8192</span><br><span class="line">cpu time               (seconds, -t) unlimited</span><br><span class="line">max user processes              (-u) 14996</span><br><span class="line">virtual memory          (kbytes, -v) unlimited</span><br><span class="line">file locks                      (-x) unlimited</span><br><span class="line"></span><br><span class="line">open files       (-n) 65534</span><br></pre></td></tr></table></figure>
+
+<p>查看系统允许打开的最大文件数 cat /proc/sys/fs/file-max</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">root@CN07ATT01NGX01V ~]<span class="comment"># cat /proc/sys/fs/file-max</span></span><br><span class="line">379184</span><br><span class="line">[root@CN07ATT01NGX01V ~]<span class="comment">#</span></span><br></pre></td></tr></table></figure>
+
+<p>基于这个问题是日积月累之后突然爆发的，于是对比中午打卡和下午打卡人数和未释放的文件句柄数对比，发现基本是能对应的上的。</p>
+<p>截止2020-03-20 19:24分</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">中午打卡日志数量 334条</span><br><span class="line">下午打卡日志数量 530条</span><br><span class="line">中午打卡后</span><br><span class="line">[root@CN07ATT01NGX01V ~]<span class="comment"># ls -l /proc/13544/fd/ | wc -l</span></span><br><span class="line">835</span><br><span class="line">下午打卡后</span><br><span class="line">[root@CN07ATT01NGX01V ~]<span class="comment"># ls -l /proc/13544/fd/ | wc -l</span></span><br><span class="line">1368</span><br></pre></td></tr></table></figure>
+<p>相差1368-835=533</p>
+<p>可见，未释放的资源几乎是和打卡日志相同数量递增的，<br>接着从今天出现问题前的最后一次启动，到今天出现问题时候启动时间段内，把日志做了一次查询统计：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">select count(1) from t_log <span class="built_in">where</span>  create_time&gt;<span class="string">"2020-03-03 21:29:00"</span> and create_time&lt;=<span class="string">"2020-03-20 08:10:07"</span>  order by create_time desc</span><br></pre></td></tr></table></figure>
+
+<p><img src="/images/20200323094542768.png" alt=""></p>
+<p>如上图，启动后一共产生打卡日志64001条。</p>
+<p>每个用户允许打开的最大文件数65534</p>
+<p>差额为65534-64001 =1533个文件打开数。</p>
+<h3 id="2、结论"><a href="#2、结论" class="headerlink" title="2、结论"></a>2、结论</h3><p>因此结论一时正确的，附上具体结论内容：</p>
+<p>[root@CN07ATT01NGX01V ~]# ls -l /proc/13544/fd</p>
+<p>/tmpip.db的资源占用未及时释放导致系统的文件句柄数量越来越大。在今天超出。报异常</p>
+<p>java.io.IOException: Too many open files</p>
+<h3 id="3、解决"><a href="#3、解决" class="headerlink" title="3、解决"></a>3、解决</h3><p>1、日志方法记录ip的时候调用了AddressUtil的getCityInfo(String ip)<br>根据传入去得到对应的中文地址，内部逻辑使用了tmpip.db。因此针对这部分代码进行核查。看是否有未释放，果然对于dbsearch使用之后是没有释放的，于是添加dbSearch.close方法进行关闭资源。<br><img src="/images/20200323102106440.png" alt=""><br>2、在代码修改前，我们先在测试系统也还原到了这个问题，添加释放方法之后，资源释放问题得以解决！</p>
+<h2 id="四、参考文献"><a href="#四、参考文献" class="headerlink" title="四、参考文献"></a>四、参考文献</h2><p>java.io.IOException: Too many open files问题常用命令<a href="https://blog.csdn.net/liyuguanguan/article/details/90716709" target="_blank" rel="noopener">https://blog.csdn.net/liyuguanguan/article/details/90716709</a><br>对于高并发的产生：java.io.IOException: Too many open files(打开文件句柄过多问题)<br><a href="https://my.oschina.net/czpdjx/blog/2980869" target="_blank" rel="noopener">https://my.oschina.net/czpdjx/blog/2980869</a><br>java.io.IOException: Too many open files问题<br><a href="https://blog.csdn.net/liyuguanguan/article/details/90716709" target="_blank" rel="noopener">https://blog.csdn.net/liyuguanguan/article/details/90716709</a><br>linux进程数和句柄数<br><a href="https://blog.csdn.net/Poetic_Vienna/article/details/87621371?depth_1-utm_source=distribute.pc_relevant.none-task&utm_source=distribute.pc_relevant.none-task" target="_blank" rel="noopener">https://blog.csdn.net/Poetic_Vienna/article/details/87621371?depth_1-utm_source=distribute.pc_relevant.none-task&amp;utm_source=distribute.pc_relevant.none-task</a></p>
+
+    </div>
+
+    
+    
+    
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>罗三
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="http://yoursite.com/2020/03/26/technique-sharing/2020/%E7%94%9F%E4%BA%A7java-io-IOException-Too-many-open-files%E6%8E%92%E6%9F%A5%E8%BF%87%E7%A8%8B%E5%92%8C%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88/" title="生产java.io.IOException Too many open files排查过程和解决方案">http://yoursite.com/2020/03/26/technique-sharing/2020/生产java-io-IOException-Too-many-open-files排查过程和解决方案/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/java/" rel="tag"># java</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/03/26/technique-sharing/2020/web%E7%B3%BB%E7%BB%9F%E5%90%8E%E7%AB%AF%E6%8E%A5%E5%8F%A3%E5%8E%8B%E6%B5%8B%E6%8A%A5%E5%91%8AV1-0/" rel="prev" title="web系统后端接口压测报告V1.0">
+      <i class="fa fa-chevron-left"></i> web系统后端接口压测报告V1.0
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一、背景"><span class="nav-number">1.</span> <span class="nav-text">一、背景</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二、第一波排查"><span class="nav-number">2.</span> <span class="nav-text">二、第一波排查</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1、问题持续时间"><span class="nav-number">2.1.</span> <span class="nav-text">1、问题持续时间</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2、错误日志"><span class="nav-number">2.2.</span> <span class="nav-text">2、错误日志</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3、tcp连接数"><span class="nav-number">2.3.</span> <span class="nav-text">3、tcp连接数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4、句柄打开数"><span class="nav-number">2.4.</span> <span class="nav-text">4、句柄打开数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5、-分析"><span class="nav-number">2.5.</span> <span class="nav-text">5、 分析</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6、结论"><span class="nav-number">2.6.</span> <span class="nav-text">6、结论</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#三、第二波排查"><span class="nav-number">3.</span> <span class="nav-text">三、第二波排查</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1、分析"><span class="nav-number">3.1.</span> <span class="nav-text">1、分析</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2、结论"><span class="nav-number">3.2.</span> <span class="nav-text">2、结论</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3、解决"><span class="nav-number">3.3.</span> <span class="nav-text">3、解决</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#四、参考文献"><span class="nav-number">4.</span> <span class="nav-text">四、参考文献</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Mandy</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">22</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">18</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/jiezaizone" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;jiezaizone" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Mandy</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://mist.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","model":{"scale":1,"hHeadPos":0.5,"vHeadPos":0.618,"jsonPath":"/live2dw/assets/shizuku.model.json"},"display":{"superSample":2,"width":150,"height":300,"position":"left","hOffset":0,"vOffset":-20},"mobile":{"show":false,"scale":0.5},"react":{"opacityDefault":0.7,"opacityOnHover":0.2},"log":false,"tagMode":false});</script></body>
+</html>

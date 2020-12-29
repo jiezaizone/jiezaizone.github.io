@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"yoursite.com","root":"/","scheme":"Mist","version":"7.7.2","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="一、了解mockjs前言：mockjs是什么 生成随机数据，拦截 Ajax 请求。 通过随机数据，模拟各种场景；不需要修改既有代码，就可以拦截 Ajax 请求，返回模拟的响应数据；支持生成随机的文本、数字、布尔值、日期、邮箱、链接、图片、颜色等；支持支持扩展更多数据类型，支持自定义函数和正则。 优点是非常简单方便, 无侵入性, 基本覆盖常用的接口数据类型.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="mockjs的使用">
+<meta property="og:url" content="http://yoursite.com/2019/01/02/technique-sharing/2019/mock.js%E5%AD%A6%E4%B9%A0/index.html">
+<meta property="og:site_name" content="技术分享">
+<meta property="og:description" content="一、了解mockjs前言：mockjs是什么 生成随机数据，拦截 Ajax 请求。 通过随机数据，模拟各种场景；不需要修改既有代码，就可以拦截 Ajax 请求，返回模拟的响应数据；支持生成随机的文本、数字、布尔值、日期、邮箱、链接、图片、颜色等；支持支持扩展更多数据类型，支持自定义函数和正则。 优点是非常简单方便, 无侵入性, 基本覆盖常用的接口数据类型.">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/13541244-8591909d7ad643ba.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/13541244-df9abe4b0670dbc9.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/13541244-306d615522225b9f.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/13541244-9d6b0aebdf33f105.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/13541244-db20e6a7a516fd21.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/13541244-40cbae3116f762b5.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/13541244-56b1a21840629977.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="article:published_time" content="2019-01-02T06:00:00.000Z">
+<meta property="article:modified_time" content="2020-03-25T10:24:48.115Z">
+<meta property="article:author" content="Mandy">
+<meta property="article:tag" content="mock">
+<meta property="article:tag" content="js">
+<meta property="article:tag" content="Ajax">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://upload-images.jianshu.io/upload_images/13541244-8591909d7ad643ba.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+
+<link rel="canonical" href="http://yoursite.com/2019/01/02/technique-sharing/2019/mock.js%E5%AD%A6%E4%B9%A0/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>mockjs的使用 | 技术分享</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">技术分享</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+  <a href="https://github.com/jiezaizone" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/01/02/technique-sharing/2019/mock.js%E5%AD%A6%E4%B9%A0/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Mandy">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="技术分享">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          mockjs的使用
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-01-02 14:00:00" itemprop="dateCreated datePublished" datetime="2019-01-02T14:00:00+08:00">2019-01-02</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-03-25 18:24:48" itemprop="dateModified" datetime="2020-03-25T18:24:48+08:00">2020-03-25</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h3 id="一、了解mockjs"><a href="#一、了解mockjs" class="headerlink" title="一、了解mockjs"></a>一、了解mockjs</h3><p>前言：mockjs是什么</p>
+<p>生成随机数据，拦截 Ajax 请求。</p>
+<p>通过随机数据，模拟各种场景；不需要修改既有代码，就可以拦截 Ajax 请求，返回模拟的响应数据；支持生成随机的文本、数字、布尔值、日期、邮箱、链接、图片、颜色等；支持支持扩展更多数据类型，支持自定义函数和正则。</p>
+<p>优点是非常简单方便, 无侵入性, 基本覆盖常用的接口数据类型.</p>
+<a id="more"></a>
+<h4 id="1-安装"><a href="#1-安装" class="headerlink" title="1.安装"></a>1.安装</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npm install mockjs</span><br></pre></td></tr></table></figure>
+<h4 id="2-引用"><a href="#2-引用" class="headerlink" title="2.引用"></a>2.引用</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">var Mock &#x3D; require(&#39;mockjs&#39;)    &#x2F;&#x2F;普通引用方式</span><br><span class="line"></span><br><span class="line">import Mock from &#39;mockjs&#39;      &#x2F;&#x2F;在vue中可以这样引用</span><br></pre></td></tr></table></figure>
+<h4 id="3-使用"><a href="#3-使用" class="headerlink" title="3.使用"></a>3.使用</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">testMockJs()&#123;</span><br><span class="line">    let data &#x3D; Mock.mock(&#123; </span><br><span class="line">        &#39;list|1-10&#39;:[&#123; &#39;id|+1&#39;:1,</span><br><span class="line">        &#39;engName|2-4&#39;:&#39;Hello&#39;,</span><br><span class="line">        &#39;chinaName|5&#39;:&#39;Chinese&#39;,</span><br><span class="line">        &#39;number|1-6&#39;:3,</span><br><span class="line">        &#39;aNumber|1-6.5&#39;:4,</span><br><span class="line">        &#39;first: &#39;@FIRST&#39;,    &#x2F;&#x2F;指随机生成英语中的first name</span><br><span class="line">        middle: &#39;@FIRST&#39;,</span><br><span class="line">        last: &#39;@LAST&#39;,      &#x2F;&#x2F;指随机生成英语中的last name</span><br><span class="line">        full: &#39;@first @middle @last&#39; &#125;]  &#x2F;&#x2F;@+变量名，指引用该变量的属性值</span><br><span class="line">    &#125;)</span><br><span class="line">        console.log(&#96;data:$&#123;JSON.stringify(data, null, 4)&#125;&#96;)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>生成的结果如下：</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/13541244-8591909d7ad643ba.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="生成随机json数据"></p>
+<h4 id="4-语法规范"><a href="#4-语法规范" class="headerlink" title="4.语法规范"></a>4.语法规范</h4><p>4.1数据模板定义规范（Data Template Definition，DTD）</p>
+<p><strong>数据模板中的属性构成：“name|rule”:value</strong></p>
+<p>(1).属性值是字符串String</p>
+<p><strong>‘name|min-max’: string</strong></p>
+<p>通过重复 string 生成一个字符串，重复次数大于等于 min，小于等于 max。</p>
+<p><strong>‘name|count’: string</strong></p>
+<p>通过重复 string 生成一个字符串，重复次数等于 count。</p>
+<p>‘engName|2-4’:’Hello’,</p>
+<p>‘chinaName|5’:’Chinese’,</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/13541244-df9abe4b0670dbc9.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="生成规则1"></p>
+<p>（2）属性值是数字Number</p>
+<p><strong>‘name|+1’: number</strong></p>
+<p>属性值自动加 1，初始值为 number。</p>
+<p><strong>‘name|min-max’: number</strong></p>
+<p>生成一个大于等于 min、小于等于 max 的整数，属性值 number 只是用来确定类型。</p>
+<p><strong>‘name|min-max.dmin-dmax’: number</strong></p>
+<p>生成一个浮点数，整数部分大于等于 min、小于等于 max，小数部分保留 dmin 到 dmax 位。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">data &#x3D; Mock.mock(&#123;</span><br><span class="line">                &#39;list|1-10&#39;:[&#123;</span><br><span class="line">                &#39;number1|1-100.1-10&#39;: 1,</span><br><span class="line">                &#39;number2|123.1-10&#39;: 1,</span><br><span class="line">                &#39;number3|123.3&#39;: 1,</span><br><span class="line">                &#39;number4|123.10&#39;: 1.123 &#125;]</span><br><span class="line">            &#125;)</span><br></pre></td></tr></table></figure>
+
+<p>===&gt;生成结果：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&#123; &quot;list&quot;: [ </span><br><span class="line">                &#123; &quot;number1&quot;: 2.73803408, &quot;number2&quot;: 123.46, &quot;number3&quot;: 123.748, &quot;number4&quot;: 123.1237616335 &#125;,</span><br><span class="line">                &#123; &quot;number1&quot;: 67.0562188234,&quot;number2&quot;: 123.5817686348,&quot;number3&quot;: 123.541,&quot;number4&quot;: 123.1238281167 &#125;]</span><br><span class="line">            &#125;</span><br></pre></td></tr></table></figure>
+
+<p>（3）属性值是布尔型Boolean</p>
+<p><strong>‘name|1’: boolean</strong></p>
+<p>随机生成一个布尔值，值为 true 的概率是 1/2，值为 false 的概率同样是 1/2。</p>
+<p><strong>‘name|min-max’: value</strong></p>
+<p>随机生成一个布尔值，值为 value 的概率是 min / (min + max)，值为 !value 的概率是 max / (min + max)。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">data &#x3D; Mock.mock(&#123;</span><br><span class="line">                &#39;list|1-10&#39;:[&#123;</span><br><span class="line">                &#39;boolean1|1&#39;: false,</span><br><span class="line">                &#39;boolean2|6-5&#39;: true &#125;]</span><br><span class="line">                &#125;)</span><br></pre></td></tr></table></figure>
+
+<p>===》生成结果：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">data:&#123; &quot;list&quot;: [ </span><br><span class="line">                &#123; &quot;boolean1&quot;: true, &quot;boolean2&quot;: false &#125;, </span><br><span class="line">                &#123; &quot;boolean1&quot;: true, &quot;boolean2&quot;: true &#125;, </span><br><span class="line">                &#123; &quot;boolean1&quot;: true, &quot;boolean2&quot;: false &#125;]</span><br><span class="line">            &#125;</span><br></pre></td></tr></table></figure>
+
+<p>(4)属性值是对象Object</p>
+<p><strong>‘name|count’: object</strong></p>
+<p>从属性值 object 中随机选取 count 个属性。</p>
+<p><strong>‘name|min-max’: object</strong></p>
+<p>从属性值 object 中随机选取 min 到 max 个属性。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">const mockdata &#x3D; Mock.mock(&#123;</span><br><span class="line">        &#39;people|3&#39;:&#123;name:&#39;Marry&#39;,age:14,gender:&#39;girl&#39;,eat:&#39;apple&#39;&#125;,</span><br><span class="line">        &#39;peoples|1-2&#39;:&#123;name:&#39;Marry&#39;,age:14,gender:&#39;girl&#39;,eat:&#39;apple&#39;&#125;</span><br><span class="line">      &#125;)</span><br></pre></td></tr></table></figure>
+<p>===》生成结果<br><img src="https://upload-images.jianshu.io/upload_images/13541244-306d615522225b9f.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<h4 id="5-方法"><a href="#5-方法" class="headerlink" title="5.方法"></a>5.方法</h4><p>5.1Mock.mock()</p>
+<p><strong>rurl</strong> :可选。表示需要拦截的 URL，可以是 URL 字符串或 URL 正则。<br>例如: //domain/list.json/、’/domian/list.json’。</p>
+<p><strong>rtype</strong>：可选。表示需要拦截的 Ajax 请求类型。<br>例如 GET、POST、PUT、DELETE 等。</p>
+<p><strong>template</strong>：可选。表示数据模板，可以是对象或字符串。<br>例如 { ‘data|1-10’:[{}] }、‘@EMAIL’。</p>
+<p><strong>function(options)</strong>：可选。表示用于生成响应数据的函数。</p>
+<p>(1)<strong>Mock.mock(template)</strong></p>
+<p>根据模板生成模拟数据</p>
+<p>(2)<strong>Mock.mock( rurl, template )</strong></p>
+<p>记录数据模板。当拦截到匹配 rurl 的 Ajax 请求时，将根据数据模板 template 生成模拟数据，并作为响应数据返回。</p>
+<p>(3)<strong>Mock.mock( rurl, function( options ) )</strong></p>
+<p>记录用于生成响应数据的函数。当拦截到匹配 rurl 的 Ajax 请求时，函数 function(options) 将被执行，并把执行结果作为响应数据返回。</p>
+<p>(4)<strong>Mock.mock( rurl, rtype, template )</strong></p>
+<p>记录数据模板。当拦截到匹配 rurl 和 rtype 的 Ajax 请求时，将根据数据模板 template 生成模拟数据，并作为响应数据返回。</p>
+<p>(5)<strong>Mock.mock( rurl, rtype, function( options ) )</strong></p>
+<p>记录用于生成响应数据的函数。当拦截到匹配 rurl 和 rtype 的 Ajax 请求时，函数 function(options) 将被执行，并把执行结果作为响应数据返回。</p>
+<p>5.2 Mock.setup()</p>
+<p>配置拦截 Ajax 请求时的行为。支持的配置项有：timeout。</p>
+<p>5.3 Mock.Random()</p>
+<p>是一个工具类，用于生成各种随机数据。(在数据模板中成为占位符，书写格式为<strong>@占位符(参数 [, 参数])</strong>)</p>
+<p>5.4 Mock.valid()</p>
+<p>校验真实数据 data 是否与数据模板 template 匹配。</p>
+<p>5.5 Mock.toJSONSchema()</p>
+<p>把 Mock.js 风格的数据模板 template 转换成<a href="http://json-schema.org/" target="_blank" rel="noopener">JSON Schema</a>。</p>
+<h3 id="二、在polymer项目中"><a href="#二、在polymer项目中" class="headerlink" title="二、在polymer项目中"></a>二、在polymer项目中</h3><p>前言：因为在polymer中，js文件不能直接引用外部文件，所以我们需要新建一个html,把我们需要引用的文件放在HTML中使用。</p>
+<p>1.安装mockjs</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">npm install -g bower</span><br><span class="line">bower install --save mockjs</span><br></pre></td></tr></table></figure>
+
+<p>2.在项目中新建mockData文件夹</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/13541244-9d6b0aebdf33f105.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="mockData文件夹"></p>
+<p>3.mockData.js中定义模拟数据以及需要拦截的接口</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br></pre></td><td class="code"><pre><span class="line">(function () &#123;</span><br><span class="line">  const userInfo &#x3D; Mock.mock(&#123;</span><br><span class="line">    &quot;rows|10&quot;:[&#123; &#x2F;&#x2F;&quot;name|number&quot;:[]生成number个数组</span><br><span class="line">      &quot;id|+1&quot;:1, &#x2F;&#x2F;&quot;name|+number&quot;:number 生成的每个id比前面一个大number</span><br><span class="line">      &quot;name&quot;:&quot;@name()&quot;,&#x2F;&#x2F;&quot;@name()&quot;随机生成name</span><br><span class="line">      &quot;email&quot;: &quot;@email()&quot;, &#x2F;&#x2F;&quot;@email&quot;随机生成邮箱</span><br><span class="line">      &quot;groupId|35-47&quot;: 35, &#x2F;&#x2F;&quot;groupId|35-47&quot;随机生成35-47中的某个整数</span><br><span class="line">      &quot;setGroupId|1&quot;: true,&#x2F;&#x2F;&quot;setGroupId|1&quot;随机生成boolean值</span><br><span class="line">      &quot;setId|1&quot;: true,</span><br><span class="line">      &quot;setName|1&quot;: true,</span><br><span class="line">      &quot;setSort|1&quot;: true,</span><br><span class="line">      &quot;setUrl|1&quot;: true,</span><br><span class="line">      &quot;sort|1-10&quot;: 1,</span><br><span class="line">      &quot;url&quot;: &quot;@url()&quot; &#x2F;&#x2F;&quot;@url()&quot;随机生成url</span><br><span class="line">    &#125;]</span><br><span class="line">  &#125;)</span><br><span class="line"></span><br><span class="line">  &#x2F;&#x2F;定义你需要拦截的接口对应的方法,可重写拦截后返回的操作方法</span><br><span class="line">  Mock.mock(RegExp(getMockUrl(&#39;&#x2F;management&#x2F;link&#x2F;groupsList.do&#39;) + &quot;.*&quot;),&#39;get&#39;,function (options) &#123; &#x2F;&#x2F;get请求使用正则匹配是为了拦截带参数的get请求</span><br><span class="line">    return userInfo</span><br><span class="line">  &#125;)</span><br><span class="line">  Mock.mock(getMockUrl(&#39;&#x2F;management&#x2F;link&#x2F;add.do&#39;),&#39;post&#39;,function (options) &#123;</span><br><span class="line">    addMockData(options,userInfo)</span><br><span class="line">  &#125;)</span><br><span class="line">  Mock.mock(getMockUrl(&#39;&#x2F;management&#x2F;link&#x2F;update.do&#39;),&#39;post&#39;,function (options) &#123;</span><br><span class="line">    updateMockData(options,userInfo)</span><br><span class="line">  &#125;)</span><br><span class="line">  Mock.mock(getMockUrl(&#39;&#x2F;management&#x2F;link&#x2F;delete.do&#39;),&#39;delete&#39;,function (options) &#123;</span><br><span class="line">    deleteMockData(options,userInfo)</span><br><span class="line">  &#125;)</span><br><span class="line">&#125;)()</span><br><span class="line">&#x2F;&#x2F;把url统一改成&#39;&#x2F;mock&#39;+url</span><br><span class="line">function getMockUrl(url)&#123;</span><br><span class="line">  return &#96;&#x2F;mock$&#123;url&#125;&#96;</span><br><span class="line">&#125;</span><br><span class="line">&#x2F;&#x2F;把请求的参数转换成js</span><br><span class="line">function getOptions(options) &#123;</span><br><span class="line">  return JSON.parse(options.body)</span><br><span class="line">&#125;</span><br><span class="line">&#x2F;&#x2F;add method</span><br><span class="line">function addMockData(options,mockData) &#123;</span><br><span class="line">  const obj &#x3D; this.getOptions(options)</span><br><span class="line">  obj.id &#x3D; mockData.rows.length+1</span><br><span class="line">  mockData.rows.push(obj)</span><br><span class="line">&#125;</span><br><span class="line">&#x2F;&#x2F;update method</span><br><span class="line">function updateMockData(options,mockData) &#123;</span><br><span class="line">  const obj &#x3D; this.getOptions(options)</span><br><span class="line">  mockData.rows &#x3D; mockData.rows.map(item&#x3D;&gt;&#123;</span><br><span class="line">    return item.id &#x3D;&#x3D;&#x3D; obj.id?obj:item</span><br><span class="line">  &#125;)</span><br><span class="line">&#125;</span><br><span class="line">&#x2F;&#x2F;delete method</span><br><span class="line">function deleteMockData(options,mockData) &#123;</span><br><span class="line">  const id &#x3D; parseInt(this.getOptions(options).id)</span><br><span class="line">  mockData.rows &#x3D; mockData.rows.filter(item&#x3D;&gt;&#123;</span><br><span class="line">    return item.id !&#x3D;&#x3D; id</span><br><span class="line">  &#125;)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>4.在mockData.html中引用mockjs以及mockData.js两个脚本文件</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&lt;script src&#x3D;&quot;..&#x2F;..&#x2F;..&#x2F;bower_components2&#x2F;mockjs&#x2F;dist&#x2F;mock.js&quot;&gt;&lt;&#x2F;script&gt;</span><br><span class="line">&lt;script src&#x3D;&quot;.&#x2F;mock-data.js&quot;&gt;&lt;&#x2F;script&gt;</span><br></pre></td></tr></table></figure>
+
+<p>5.需要使用模拟数据的页面，引用mockData.html</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/13541244-db20e6a7a516fd21.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image"></p>
+<p>在已有的项目中加入mockjs框架，已封装http请求接口，且不影响原有的使用。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/13541244-40cbae3116f762b5.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image"></p>
+<p>在该封装接口的脚本中引用mockData.html,在原来的基础上加一个参数，判断是否使用模拟数据.如果是，在url上做文章。这样可以保证不会影响到其他模块的使用。</p>
+<h3 id="三、在vue项目中"><a href="#三、在vue项目中" class="headerlink" title="三、在vue项目中"></a>三、在vue项目中</h3><p>1.先在vue工程文件中下载mockjs</p>
+<p>一般是：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npm install mockjs</span><br></pre></td></tr></table></figure>
+
+<p>2.在src中创建 mock.js,在mock.js中导入mockjs,即可使用Mock的各种方法</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">const Mock &#x3D; require(&#39;mockjs&#39;)     &#x2F;&#x2F;导入mockjs</span><br><span class="line">            const userInfo &#x3D;Mock.mock(&#123;       &#x2F;&#x2F;生成随机数</span><br><span class="line">                &#39;data|10&#39;:[</span><br><span class="line">                    &#123; &#39;id|+1&#39;:1,</span><br><span class="line">                    name:&#39;@ctitle(2,10)&#39;,</span><br><span class="line">                    avatar:&#39;@image(\&#39;600x600\&#39;,@color)&#39;,</span><br><span class="line">                    &#39;gender|1&#39;:true,</span><br><span class="line">                    &#39;age|18-25&#39;:20 &#125;]</span><br><span class="line">                 &#125;)</span><br><span class="line">Mock.mock(&#39;&#x2F;api&#x2F;userInfo&#x2F;queryUser&#39;,&#39;get&#39;,function () &#123; return userInfo.data&#125;) &#x2F;&#x2F;获取模拟</span><br><span class="line">数据的接口</span><br></pre></td></tr></table></figure>
+
+<p>3.在main.js中导入刚刚新建的mock.js</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">require(&#39;.&#x2F;mock.js&#39;)</span><br></pre></td></tr></table></figure>
+
+<p>至此，我们就可以访问我们定义的模拟数据接口了。</p>
+<p>以下是鄙人自己写的实现数据增删改查接口：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line">import Mock from &#39;mockjs&#39;</span><br><span class="line">export default &#123;</span><br><span class="line">  mockData()&#123;</span><br><span class="line">    const userInfo &#x3D; Mock.mock(</span><br><span class="line">      &#123;</span><br><span class="line">        &#39;data|10&#39;:[&#123;</span><br><span class="line">          &#39;id|+1&#39;:1,</span><br><span class="line">          name:&#39;@ctitle(2,10)&#39;,</span><br><span class="line">          avatar:&#39;@image(\&#39;600x600\&#39;,@color)&#39;,</span><br><span class="line">          &#39;gender|1&#39;:true,</span><br><span class="line">          &#39;age|18-25&#39;:20</span><br><span class="line">        &#125;]</span><br><span class="line">      &#125;</span><br><span class="line">    )</span><br><span class="line">&#x2F;&#x2F;模拟删除数据</span><br><span class="line">    Mock.mock(&#39;&#x2F;api&#x2F;userInfo&#x2F;deleteUser&#39;,&#39;delete&#39;,function (options) &#123;</span><br><span class="line">      const id &#x3D; parseInt(JSON.parse(options.body).id)</span><br><span class="line">      userInfo.data &#x3D; userInfo.data.filter(item&#x3D;&gt;&#123;</span><br><span class="line">        return item.id !&#x3D;&#x3D; id</span><br><span class="line">      &#125;)</span><br><span class="line">      return userInfo.data</span><br><span class="line">    &#125;)</span><br><span class="line">&#x2F;&#x2F;模拟查询数据</span><br><span class="line">    Mock.mock(&#39;&#x2F;api&#x2F;web&#x2F;itemPrice&#x2F;findFinalPriceOfferPage&#39;,&#39;get&#39;,function (options) &#123;</span><br><span class="line">      return userInfo.data</span><br><span class="line">    &#125;)</span><br><span class="line">&#x2F;&#x2F;模拟更新数据</span><br><span class="line">    Mock.mock(&#39;&#x2F;api&#x2F;userInfo&#x2F;updateUser&#39;,&#39;post&#39;,function (options) &#123;</span><br><span class="line">      const obj &#x3D; JSON.parse(options.body)</span><br><span class="line">      userInfo.data &#x3D; userInfo.data.map(item&#x3D;&gt;&#123;</span><br><span class="line">        return item.id &#x3D;&#x3D;&#x3D; obj.id?obj:item</span><br><span class="line">      &#125;)</span><br><span class="line">      return userInfo.data</span><br><span class="line">    &#125;)</span><br><span class="line">&#x2F;&#x2F;模拟添加数据</span><br><span class="line">    Mock.mock(&#39;&#x2F;api&#x2F;userInfo&#x2F;addUser&#39;,&#39;post&#39;,function (options) &#123;</span><br><span class="line">      const obj &#x3D; JSON.parse(options.body)</span><br><span class="line">      obj.id &#x3D; userInfo.data.length+1</span><br><span class="line">      userInfo.data.push(obj)</span><br><span class="line">      return userInfo.data</span><br><span class="line">    &#125;)</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在vue.config.js中设置代理服务，即可以测试接口是否被拦截</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">devServer: &#123;</span><br><span class="line">    proxy: &#123;</span><br><span class="line">      &#39;&#x2F;api&#39;: &#123;</span><br><span class="line">        target: &#39;http:&#x2F;&#x2F;localhost:9094&#39;, &#x2F;&#x2F; 请求的接口</span><br><span class="line">        changeOrigin: true,</span><br><span class="line">        ws: true,</span><br><span class="line">        pathRewrite: &#123;</span><br><span class="line">          &#39;^&#x2F;api&#x2F;&#39;: &#39;&#39;</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+
+<p>在我们的实际项目中，很多时候都是把get post请求封装好，以不用多次自己手写ajax或者axios请求。所以我们可以这样做：</p>
+<p>在封装请求的方法里加一个isMock判断是否使用模拟数据，是的话改变它的url，如：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">get(url,params&#x3D;&#123;&#125;,isMock)&#123;</span><br><span class="line">    url &#x3D; isMock?&#96;&#x2F;mock$&#123;url&#125;&#96;:url</span><br><span class="line">    return new Promise((resolve,reject)&#x3D;&gt;&#123;</span><br><span class="line">      axios.get(url,params)</span><br><span class="line">        .then(res&#x3D;&gt;&#123;</span><br><span class="line">          resolve(res)</span><br><span class="line">        &#125;)</span><br><span class="line">        .catch(error&#x3D;&gt;&#123;</span><br><span class="line">          reject(error)</span><br><span class="line">        &#125;)</span><br><span class="line">    &#125;)</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+
+<p>在mockUrl中，在url前缀加上/mock，以防止在不使用mock数据模拟的时候，影响了原有的url请求</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Mock.mock(RegExp(&#39;&#x2F;mock&#x2F;api&#x2F;web&#x2F;itemPrice&#x2F;findFinalPriceOfferPage&#39; +&#39;.*&#39;), &#39;get&#39;, function () &#123; </span><br><span class="line">                 return data.itemPriceInfo</span><br><span class="line">                &#125;)</span><br></pre></td></tr></table></figure>
+<h3 id="四、在vue项目中的应用（升级版）"><a href="#四、在vue项目中的应用（升级版）" class="headerlink" title="四、在vue项目中的应用（升级版）"></a>四、在vue项目中的应用（升级版）</h3><p><strong>适用对象：</strong> 项目已开发了一部分，后续想引入mockjs<br><strong>优点：</strong> 不影响原来请求的使用，其他成员想使用模拟数据时只需要新建按要求data数据即可，不需要修改原有的代码，不担心错提交或漏提交导致测试环境甚至生产环境跑不起来问题<br>前面操作一样，先install mockjs，在封装好的http请求中，若使用模拟数据，给url加个前缀识别,如：。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">get (url, params, isMock &#x3D; false) &#123;</span><br><span class="line">    url &#x3D; isMock ? &#96;&#x2F;mock$&#123;url&#125;&#96; : url</span><br><span class="line">    return new Promise((resolve, reject) &#x3D;&gt; &#123;</span><br><span class="line">      axios.get(url, &#123;</span><br><span class="line">        params: params</span><br><span class="line">      &#125;).then(res &#x3D;&gt; &#123;</span><br><span class="line">        resolve(res.data)</span><br><span class="line">      &#125;).catch(err &#x3D;&gt; &#123;</span><br><span class="line">        reject(err)</span><br><span class="line">      &#125;)</span><br><span class="line">    &#125;)</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+<h4 id="不同的是："><a href="#不同的是：" class="headerlink" title="不同的是："></a>不同的是：</h4><p>在目录中,新建mockData文件夹，mockData的组成有：<br><strong>data文件夹</strong>：用于存放其他成员使用模拟数据时其数据文件；<br><strong>getMockData.js</strong>：自动读取data中新增的数据脚本文件；<br><strong>mockBaseFunction</strong>:封装一些基础的增删改查方法，方便其他成员按需引用。<br><img src="https://upload-images.jianshu.io/upload_images/13541244-56b1a21840629977.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="mockData目录"><br>data中的数据文件，需要用export 封装起来，方便读取。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line">import mockBaseFunction from &#39;..&#x2F;mockBaseFunction&#39;</span><br><span class="line">const successData &#x3D; &#123; data: null, meta: &#123; success: true, message: &#39;ok&#39; &#125; &#125;</span><br><span class="line">const itemPriceInfo &#x3D; mockBaseFunction.mock(&#123;</span><br><span class="line">  data: &#123;</span><br><span class="line">    &#39;rows|5&#39;: [&#123;</span><br><span class="line">      category: &#39;@name()&#39;, &#x2F;&#x2F; &#39;@name()随机生成英文名字&#39;</span><br><span class="line">      createdByName: &#39;@cname()&#39;, &#x2F;&#x2F; &#39;@name()随机生成中文名字&#39;</span><br><span class="line">      &#39;id|+1&#39;: 63, &#x2F;&#x2F; &quot;id|+number&quot;:number 生成的每个id比前面一个大number</span><br><span class="line">      manufacturerName: &#39;@ctitle()&#39;,</span><br><span class="line">      &#39;status|1-3&#39;: 3, &#x2F;&#x2F; &quot;status1-3&quot;随机生成1-3中的某个整数</span><br><span class="line">      supplierCompanyId: 61,</span><br><span class="line">      supplierCompanyName: &#39;@ctitle()&#39;, &#x2F;&#x2F; &#39;@ctitle()&#39;随机生成中文标题</span><br><span class="line">    &#125;],</span><br><span class="line">    pageResponse: &#123; start: 0, limit: 5, results: 60 &#125;</span><br><span class="line">  &#125;,</span><br><span class="line">  meta: &#123;</span><br><span class="line">    message: &#39;ok&#39;,</span><br><span class="line">    success: true</span><br><span class="line">  &#125;</span><br><span class="line">&#125;)</span><br><span class="line"></span><br><span class="line">export default &#123;</span><br><span class="line">  mockDemo () &#123;</span><br><span class="line">    &#x2F;&#x2F; 拦截的url：fun.getMockUrl(&#39;需要拦截的url&#39;),请求方法，可为空:&#39;&#39;,拦截后的操作方法</span><br><span class="line">    &#x2F;&#x2F; 拦截get请求，返回模拟数据</span><br><span class="line">    mockBaseFunction.mock(RegExp(mockBaseFunction.getMockUrl(&#39;&#x2F;api&#x2F;web&#x2F;itemPrice&#x2F;findFinalPriceOfferPage&#39;) + &#39;.*&#39;), &#39;get&#39;, function (options) &#123;</span><br><span class="line">      return mockBaseFunction.queryMockData(options, itemPriceInfo)</span><br><span class="line">    &#125;)</span><br><span class="line">    &#x2F;&#x2F; 拦截post请求，增加数据，拦截后返回增加模拟数据方法</span><br><span class="line">    mockBaseFunction.mock(mockBaseFunction.getMockUrl(&#39;&#x2F;api&#x2F;userInfo&#x2F;addUser&#39;), &#39;post&#39;, function (options) &#123;</span><br><span class="line">      mockBaseFunction.addMockData(options, itemPriceInfo, successData)</span><br><span class="line">    &#125;)</span><br><span class="line">    &#x2F;&#x2F; 拦截post请求，修改数据，拦截后返回修改模拟数据方法</span><br><span class="line">    mockBaseFunction.mock(mockBaseFunction.getMockUrl(&#39;&#x2F;api&#x2F;userInfo&#x2F;updateUser&#39;), &#39;post&#39;, function (options) &#123;</span><br><span class="line">      mockBaseFunction.updateMockData(options, itemPriceInfo, successData)</span><br><span class="line">    &#125;)</span><br><span class="line">    &#x2F;&#x2F; 拦截post请求，删除数据，拦截后返回删除模拟数据方法</span><br><span class="line">    mockBaseFunction.mock(mockBaseFunction.getMockUrl(&#39;&#x2F;api&#x2F;userInfo&#x2F;deleteUser&#39;), &#39;post&#39;, function (options) &#123;</span><br><span class="line">      mockBaseFunction.deleteMockData(options, itemPriceInfo, successData)</span><br><span class="line">    &#125;)</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>getMockData.js</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">(function () &#123;</span><br><span class="line">  const mockData &#x3D; require.context(&#39;..&#x2F;mockData&#x2F;data&#39;, false, &#x2F;[A-Za-z0-9-_,\s]+\.js$&#x2F;i)</span><br><span class="line">  mockData.keys().reduce((modules, modulePath) &#x3D;&gt; &#123;</span><br><span class="line">    &#x2F;&#x2F; set &#39;.&#x2F;app.js&#39; &#x3D;&gt; &#39;app&#39;</span><br><span class="line">    const moduleName &#x3D; modulePath.replace(&#x2F;^\.\&#x2F;(.*)\.\w+$&#x2F;, &#39;$1&#39;)</span><br><span class="line">    const value &#x3D; mockData(modulePath)</span><br><span class="line">      modules[moduleName] &#x3D; value.default</span><br><span class="line">      return modules[moduleName][moduleName]()</span><br><span class="line">  &#125;, &#123;&#125;)</span><br><span class="line">&#125;)()</span><br></pre></td></tr></table></figure>
+<h3 id="重点在于使用require-context（）读取data中的数据文件"><a href="#重点在于使用require-context（）读取data中的数据文件" class="headerlink" title="重点在于使用require.context（）读取data中的数据文件"></a>重点在于使用require.context（）读取data中的数据文件</h3><p><strong>mockBaseFunction.js</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br></pre></td><td class="code"><pre><span class="line">import Mock from &#39;mockjs&#39;</span><br><span class="line"></span><br><span class="line">export default &#123;</span><br><span class="line">  mock: Mock.mock,  &#x2F;&#x2F;这里定义mock变量，是为了方便其他成员使用mockjs，不需要再自己引用mockjs,直接引用mockBaseFunction.js即可</span><br><span class="line">&#x2F;&#x2F; 将url转换成&#x2F;mock+url格式</span><br><span class="line">  getMockUrl (url) &#123;</span><br><span class="line">    return &#96;&#x2F;mock$&#123;url&#125;&#96;</span><br><span class="line">  &#125;,</span><br><span class="line">&#x2F;&#x2F; 将请求的传参转换成js对象</span><br><span class="line">  getOptions (options) &#123;</span><br><span class="line">    return JSON.parse(options.body)</span><br><span class="line">  &#125;,</span><br><span class="line">&#x2F;&#x2F; 查询模拟数据</span><br><span class="line">  queryMockData (option, mockData, selfFunction) &#123;</span><br><span class="line">    if (typeof (selfFunction) !&#x3D;&#x3D; &#39;function&#39;) &#123;</span><br><span class="line">      return mockData</span><br><span class="line">    &#125;</span><br><span class="line">    return selfFunction()</span><br><span class="line">  &#125;,</span><br><span class="line">&#x2F;&#x2F; 模拟新增数据</span><br><span class="line">  addMockData (options, mockData, successData &#x3D; &#123;&#125;, selfFunction) &#123;</span><br><span class="line">    const params &#x3D; this.getOptions(options)</span><br><span class="line">    if (typeof (selfFunction) !&#x3D;&#x3D; &#39;function&#39;) &#123;</span><br><span class="line">      params.id &#x3D; mockData.data.rows.length + 1</span><br><span class="line">      mockData.data.rows.push(params)</span><br><span class="line">      return successData || &#39;&#39;</span><br><span class="line">    &#125;</span><br><span class="line">    return selfFunction()</span><br><span class="line">  &#125;,</span><br><span class="line">&#x2F;&#x2F; 模拟编辑数据</span><br><span class="line">  updateMockData (options, mockData, successData &#x3D; &#123;&#125;, selfFunction) &#123;</span><br><span class="line">    if (typeof (selfFunction) !&#x3D;&#x3D; &#39;function&#39;) &#123;</span><br><span class="line">      const obj &#x3D; this.getOptions(options)</span><br><span class="line">      mockData.data.rows &#x3D; mockData.data.rows.map(item &#x3D;&gt; &#123;</span><br><span class="line">        return item.id &#x3D;&#x3D;&#x3D; obj.id ? obj : item</span><br><span class="line">      &#125;)</span><br><span class="line">      return successData || &#39;&#39;</span><br><span class="line">    &#125;</span><br><span class="line">    return selfFunction()</span><br><span class="line">  &#125;,</span><br><span class="line">&#x2F;&#x2F; 模拟删除数据</span><br><span class="line">  deleteMockData (options, mockData, successData &#x3D; &#123;&#125;, selfFunction) &#123;</span><br><span class="line">    if (typeof (selfFunction) !&#x3D;&#x3D; &#39;function&#39;) &#123;</span><br><span class="line">      const id &#x3D; parseInt(this.getOptions(options).id)</span><br><span class="line">      mockData.data.rows &#x3D; mockData.data.rows.filter(item &#x3D;&gt; &#123;</span><br><span class="line">        return item.id !&#x3D;&#x3D; id</span><br><span class="line">      &#125;)</span><br><span class="line">      return successData || &#39;&#39;</span><br><span class="line">    &#125;</span><br><span class="line">    selfFunction()</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>突破点：</strong>读取data中的数据文件并且调用封装好的方法。</p>
+<p>@ by 曾晓霞</p>
+
+    </div>
+
+    
+    
+    
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>曾晓霞
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="http://yoursite.com/2019/01/02/technique-sharing/2019/mock.js%E5%AD%A6%E4%B9%A0/" title="mockjs的使用">http://yoursite.com/2019/01/02/technique-sharing/2019/mock.js学习/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/mock/" rel="tag"># mock</a>
+              <a href="/tags/js/" rel="tag"># js</a>
+              <a href="/tags/Ajax/" rel="tag"># Ajax</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2019/01/02/technique-sharing/2019/mock.js%D1%A7%CF%B0/" rel="prev" title="mockjs的使用">
+      <i class="fa fa-chevron-left"></i> mockjs的使用
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2019/01/03/technique-sharing/2019/nuxt.js%D1%A7%CF%B0/" rel="next" title="nuxt.js">
+      nuxt.js <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#一、了解mockjs"><span class="nav-number">1.</span> <span class="nav-text">一、了解mockjs</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-安装"><span class="nav-number">1.1.</span> <span class="nav-text">1.安装</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-引用"><span class="nav-number">1.2.</span> <span class="nav-text">2.引用</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-使用"><span class="nav-number">1.3.</span> <span class="nav-text">3.使用</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-语法规范"><span class="nav-number">1.4.</span> <span class="nav-text">4.语法规范</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#5-方法"><span class="nav-number">1.5.</span> <span class="nav-text">5.方法</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#二、在polymer项目中"><span class="nav-number">2.</span> <span class="nav-text">二、在polymer项目中</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#三、在vue项目中"><span class="nav-number">3.</span> <span class="nav-text">三、在vue项目中</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#四、在vue项目中的应用（升级版）"><span class="nav-number">4.</span> <span class="nav-text">四、在vue项目中的应用（升级版）</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#不同的是："><span class="nav-number">4.1.</span> <span class="nav-text">不同的是：</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#重点在于使用require-context（）读取data中的数据文件"><span class="nav-number">5.</span> <span class="nav-text">重点在于使用require.context（）读取data中的数据文件</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Mandy</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">22</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">18</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/jiezaizone" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;jiezaizone" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Mandy</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://mist.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","model":{"scale":1,"hHeadPos":0.5,"vHeadPos":0.618,"jsonPath":"/live2dw/assets/shizuku.model.json"},"display":{"superSample":2,"width":150,"height":300,"position":"left","hOffset":0,"vOffset":-20},"mobile":{"show":false,"scale":0.5},"react":{"opacityDefault":0.7,"opacityOnHover":0.2},"log":false,"tagMode":false});</script></body>
+</html>

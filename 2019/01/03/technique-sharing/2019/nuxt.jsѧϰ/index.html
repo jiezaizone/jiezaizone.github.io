@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"yoursite.com","root":"/","scheme":"Mist","version":"7.7.2","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="nuxt.js简介nuxt.js是一个基于vue.js的通用框架，集成了Vue 2、Vue-Router、Vuex、Vue-ssr(服务端渲染)、Vue-Meta，最常用的是用来作ssr（服务端渲染）。这里，我们先来科普一下服务端渲染跟客户端渲染的区别.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="nuxt.js">
+<meta property="og:url" content="http://yoursite.com/2019/01/03/technique-sharing/2019/nuxt.js%D1%A7%CF%B0/index.html">
+<meta property="og:site_name" content="技术分享">
+<meta property="og:description" content="nuxt.js简介nuxt.js是一个基于vue.js的通用框架，集成了Vue 2、Vue-Router、Vuex、Vue-ssr(服务端渲染)、Vue-Meta，最常用的是用来作ssr（服务端渲染）。这里，我们先来科普一下服务端渲染跟客户端渲染的区别.">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/13541244-4634f4ddea06b8d2.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/13541244-3d8ef5729011b4ef.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/13541244-4212d977471bec70.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/13541244-397e541a98b32c10.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="article:published_time" content="2019-01-03T06:00:00.000Z">
+<meta property="article:modified_time" content="2020-03-25T10:24:50.000Z">
+<meta property="article:author" content="Mandy">
+<meta property="article:tag" content="js">
+<meta property="article:tag" content="nuxt">
+<meta property="article:tag" content="vue ssr">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://upload-images.jianshu.io/upload_images/13541244-4634f4ddea06b8d2.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+
+<link rel="canonical" href="http://yoursite.com/2019/01/03/technique-sharing/2019/nuxt.js%D1%A7%CF%B0/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>nuxt.js | 技术分享</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">技术分享</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+  <a href="https://github.com/jiezaizone" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/01/03/technique-sharing/2019/nuxt.js%D1%A7%CF%B0/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Mandy">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="技术分享">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          nuxt.js
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-01-03 14:00:00" itemprop="dateCreated datePublished" datetime="2019-01-03T14:00:00+08:00">2019-01-03</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-03-25 18:24:50" itemprop="dateModified" datetime="2020-03-25T18:24:50+08:00">2020-03-25</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="nuxt-js简介"><a href="#nuxt-js简介" class="headerlink" title="nuxt.js简介"></a>nuxt.js简介</h2><p>nuxt.js是一个基于vue.js的通用框架，集成了Vue 2、Vue-Router、Vuex、Vue-ssr(服务端渲染)、Vue-Meta，最常用的是用来作ssr（服务端渲染）。这里，我们先来科普一下服务端渲染跟客户端渲染的区别.</p>
+<a id="more"></a>
+
+<h3 id="1-服务端渲染与客户端渲染"><a href="#1-服务端渲染与客户端渲染" class="headerlink" title="(1)服务端渲染与客户端渲染"></a>(1)服务端渲染与客户端渲染</h3><p><img src="https://upload-images.jianshu.io/upload_images/13541244-4634f4ddea06b8d2.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="服务端渲染与客户端渲染过程对比图.png"><br>最大的区别，简单点来说就是责任越大压力越大(谁渲染谁压力大)<br>1)服务端渲染优缺点：<br>优点：前端耗时少、有利于SEO、无需占用客户端资源、后端生成静态文件<br>缺点：不利于前后端分离、占用服务器资源<br>适用于应用交互不太复杂需要良好的SEO且服务器性能好<br>2)客户端渲染优缺点：<br>优点：有利于前后端分离、服务器压力小<br>缺点：前端响应慢、不利于SEO<br>适用于应用交互复杂且不需要良好的SEO，例如企业内部系统</p>
+<h3 id="2-Vue-ssr"><a href="#2-Vue-ssr" class="headerlink" title="(2)Vue ssr"></a>(2)Vue ssr</h3><p>既然nuxt.js最常用是用来做ssr，那就更有必要提一下Vue SSR了。一目了然，它是基于vue.js的服务端渲染。主要渲染插件是：vue-server-renderer，官网给出的流程图如下：<br><img src="https://upload-images.jianshu.io/upload_images/13541244-3d8ef5729011b4ef.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="vue-server-renderer流程图.png"><br>可以看出vue的后端渲染分三个部分组成：页面的源码（source），node层的渲染部分和浏览器端的渲染部分。<br>source分为两种entry point,一个是前端页面的入口client entry,主要是实例化Vue对象，将其挂载到页面中；另外一个是后端渲染服务入口server entry,主要是控服务端渲染模块回调，返回一个Promise对象，最终返回一个Vue对象。<br>关于vue-ssr的配置使用，不是本篇文章的重点，就不一一详述了。具体参见<a href="https://ssr.vuejs.org/zh/guide/" target="_blank" rel="noopener">vue-ssr官网</a></p>
+<h3 id="3-nuxt-js的使用"><a href="#3-nuxt-js的使用" class="headerlink" title="(3)nuxt.js的使用"></a>(3)nuxt.js的使用</h3><p>前面科普了一大堆，只是为了让我们能更好的上手nuxt.js。<br>1)使用npx或者yarn两种方式下载<br><code>npx create-nuxt-app &lt;项目名&gt;</code><br><code>yarn create nuxt-app &lt;项目名&gt;</code><br>2)接着需要你做一些选择，下载方式、UI框架、集成的服务端框架、语法校验等等，做完选择后会帮你安装相关依赖。<br>3)完成后，进入文件夹，运行<code>npm run dev</code>即可<br>4)nuxt.js概述：<br><img src="https://upload-images.jianshu.io/upload_images/13541244-4212d977471bec70.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="nuxt.js.png"><br>5）一些常用配置<br>js、css引入</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">css: [</span><br><span class="line">    &#39;iview&#x2F;dist&#x2F;styles&#x2F;iview.css&#39;</span><br><span class="line">  ],</span><br><span class="line"> plugins: [</span><br><span class="line">    &#39;@&#x2F;plugins&#x2F;iview&#39;</span><br><span class="line">  ],</span><br></pre></td></tr></table></figure>
+<p>修改网站icon<br>icon.png文件存放在static文件夹下，nuxt.config.js中配置head属性</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">head: &#123;</span><br><span class="line">    title: process.env.npm_package_name || &#39;&#39;,</span><br><span class="line">    meta: [</span><br><span class="line">      &#123; charset: &#39;utf-8&#39; &#125;,</span><br><span class="line">      &#123; name: &#39;viewport&#39;, content: &#39;width&#x3D;device-width, initial-scale&#x3D;1&#39; &#125;,</span><br><span class="line">      &#123; hid: &#39;description&#39;, name: &#39;description&#39;, content: process.env.npm_package_description || &#39;&#39; &#125;</span><br><span class="line">    ],</span><br><span class="line">    link: [</span><br><span class="line">      &#123; rel: &#39;icon&#39;, type: &#39;image&#x2F;x-icon&#39;, href: &#39;&#x2F;favicon.ico&#39; &#125;</span><br><span class="line">    ]</span><br><span class="line">  &#125;,</span><br></pre></td></tr></table></figure>
+<p>中间件的使用</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;&#x2F;全局使用</span><br><span class="line">module.exports &#x3D; &#123;</span><br><span class="line">  router: &#123;</span><br><span class="line">    middleware: &#39;中间件名称&#39;</span><br><span class="line">  &#125;  </span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">&#x2F;&#x2F;页面单独使用</span><br><span class="line">export default &#123;</span><br><span class="line">    middleware: &#39;中间件名称&#39;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>关于nuxt.config.js的其他配置，官网说得很详细，可以直接在<a href="https://zh.nuxtjs.org/" target="_blank" rel="noopener">官网</a>学习使用。</p>
+<h2 id="nuxt-js一些常用操作"><a href="#nuxt-js一些常用操作" class="headerlink" title="nuxt.js一些常用操作"></a>nuxt.js一些常用操作</h2><h3 id="关于路由"><a href="#关于路由" class="headerlink" title="关于路由"></a>关于路由</h3><p>只要我们在pages创建新的vue页面时，运行时.nuxt包中的router.js就会自动生成路由地址。<br><img src="https://upload-images.jianshu.io/upload_images/13541244-397e541a98b32c10.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="自动生成路由地址"></p>
+<h3 id="1-路由跳转"><a href="#1-路由跳转" class="headerlink" title="(1)路由跳转"></a>(1)路由跳转</h3><p>路由跳转有两种方式，router-link与nuxt-link,使用方式跟原来vue一样</p>
+<figure class="highlight plain"><figcaption><span>to</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;nuxt-link :to&#x3D;&quot;&#123;name:&#39;user-id&#39;,params:&#123;id:2&#125;&#125;&quot;&gt;页面跳转2&lt;&#x2F;nuxt-link&gt;</span><br></pre></td></tr></table></figure>
+<p>也可以使用<br><code>this.$router.push({name:&#39;user-id&#39;})</code></p>
+<h3 id="2-关于带参数的路由地址校验"><a href="#2-关于带参数的路由地址校验" class="headerlink" title="(2)关于带参数的路由地址校验"></a>(2)关于带参数的路由地址校验</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">export default &#123;</span><br><span class="line">       validate (&#123; params &#125;) &#123;</span><br><span class="line">       &#x2F;&#x2F; 路由参数校验，必须是一个数字,如果校验失败，抛出异常</span><br><span class="line">       if(&#x2F;^\d+$&#x2F;.test(params.id))&#123;</span><br><span class="line">        return true</span><br><span class="line">       &#125;</span><br><span class="line">       throw new Error(&#39;Under Construction!&#39;)</span><br><span class="line">     &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在跳转页面的js中加上validate校验，这样在页面预渲染时就会自动校验路由参数是否符合规范，否则抛出异常</p>
+<h3 id="3-页面是否必须已登录才能访问"><a href="#3-页面是否必须已登录才能访问" class="headerlink" title="(3)页面是否必须已登录才能访问"></a>(3)页面是否必须已登录才能访问</h3><p>在没有使用nuxt.js框架时，我们可以采取的办法一般有：在配置路由时，给路由加个meta:{isHadLogin: true},再通过router.beforeEach判断,简单例子如下：</p>
+<figure class="highlight plain"><figcaption><span>Vue from 'vue'</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br></pre></td><td class="code"><pre><span class="line">import Router from &#39;vue-router&#39;</span><br><span class="line">import Store from &#39;..&#x2F;vuex&#x2F;store&#39;</span><br><span class="line">Vue.use(Router)</span><br><span class="line">const route &#x3D; [&#123;</span><br><span class="line">    path: &quot;&#x2F;login&quot;,</span><br><span class="line">    component:()&#x3D;&gt;import(&#39;..&#x2F;pages&#x2F;login&#39;),</span><br><span class="line">    name: &quot;login&quot;</span><br><span class="line">  &#125;, &#123;</span><br><span class="line">    path: &quot;&#x2F;user&#x2F;One&quot;,</span><br><span class="line">    component: ()&#x3D;&gt;import(&#39;..&#x2F;pages&#x2F;user&#x2F;one&#39;),</span><br><span class="line">    name: &quot;user-One&quot;,</span><br><span class="line">    meta:&#123;</span><br><span class="line">      isHadLogin:true</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;, &#123;</span><br><span class="line">    path: &quot;&#x2F;user&#x2F;:id&quot;,</span><br><span class="line">    component: ()&#x3D;&gt;import(&#39;..&#x2F;pages&#x2F;user&#x2F;_id&#39;),</span><br><span class="line">    name: &quot;user-id&quot;,</span><br><span class="line">    meta:&#123;</span><br><span class="line">      isHadLogin:true</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;, &#123;</span><br><span class="line">    path: &quot;&#x2F;&quot;,</span><br><span class="line">    component:()&#x3D;&gt;import(&#39;..&#x2F;pages&#x2F;index&#39;),</span><br><span class="line">    name: &quot;index&quot;,</span><br><span class="line">    meta:&#123;</span><br><span class="line">      isHadLogin:true</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;, &#123;</span><br><span class="line">    path: &quot;&#x2F;:slug&#x2F;component&quot;,</span><br><span class="line">    component: ()&#x3D;&gt;import(&#39;..&#x2F;pages&#x2F;_slug&#x2F;component&#39;),</span><br><span class="line">    name: &quot;slug-component&quot;,</span><br><span class="line">    meta:&#123;</span><br><span class="line">      isHadLogin:true</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">)]</span><br><span class="line">const router &#x3D; new Router(&#123;</span><br><span class="line">  mode:&#39;history&#39;,</span><br><span class="line">  route</span><br><span class="line">&#125;)</span><br><span class="line">router.beforeEach((to,from,next)&#x3D;&gt;&#123;</span><br><span class="line">  store.dispatch(&#39;getCurrentUser&#39;).then(() &#x3D;&gt; &#123;</span><br><span class="line">    &#x2F;&#x2F; 未登录，需要登录跳转到登录页面</span><br><span class="line">    if (to.meta.isHadLogin &amp;&amp; !Store.state.authUser) &#123;</span><br><span class="line">      window.location.href &#x3D; &#39;localhost:1000&#x2F;login&#39;</span><br><span class="line">    &#125;</span><br><span class="line">    next()</span><br><span class="line">  &#125;)</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+<p>使用nuxt.js框架的话，需要在middleware(中间件)中加个控制，需要登录才能访问的页面再加个middleware配置即可。例如：<br>文件地址：middleware/auth.js</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">export default function (&#123; store, redirect &#125;) &#123;</span><br><span class="line">  if (!store.state.authUser) &#123;</span><br><span class="line">    &#x2F;&#x2F; error(&#123;</span><br><span class="line">    &#x2F;&#x2F;   message: &#39;You are not connected&#39;,</span><br><span class="line">    &#x2F;&#x2F;   statusCode: 403</span><br><span class="line">    &#x2F;&#x2F; &#125;)</span><br><span class="line">    return redirect(&#39;&#x2F;login&#39;)</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>需要登录才能访问的页面配置：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">export default &#123;</span><br><span class="line">  middleware: &#39;auth&#39;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这样配置之后，在跳转到该页面时，如果没有登录，就会跳到登录页面。</p>
+<h3 id="axios跨域请求"><a href="#axios跨域请求" class="headerlink" title="axios跨域请求"></a>axios跨域请求</h3><p>在nuxt项目中，是默认安装axios，但跨域请求，有点小区别于非nuxt.js的项目。<br>在没有使用nuxt.js时，我们在vue.config.js文件中配置proxy代理，如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">        devServer: &#123;</span><br><span class="line">           port: 8085, &#x2F;&#x2F; 端口号</span><br><span class="line">            host: &#39;127.0.0.1&#39;,</span><br><span class="line">            https: false ,</span><br><span class="line">            proxy: &#123;</span><br><span class="line">              &#39;&#x2F;api&#39;: &#123;</span><br><span class="line">                target: &#39;http:&#x2F;&#x2F;localhost:9094&#39;, &#x2F;&#x2F; 对应自己的接口</span><br><span class="line">                changeOrigin: true,</span><br><span class="line">                ws: true,</span><br><span class="line">                pathRewrite: &#123;</span><br><span class="line">                  &#39;^&#x2F;api&#x2F;&#39;: &#39;&#39;</span><br><span class="line">                &#125;</span><br><span class="line">              &#125;</span><br><span class="line">          &#125;</span><br><span class="line">      &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>而在nuxt.js的项目中，我们是在nuxt.config.js中配置proxy代理，代码如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">modules: [</span><br><span class="line">    &#39;@nuxtjs&#x2F;axios&#39;,</span><br><span class="line">    &#39;@nuxtjs&#x2F;proxy&#39;</span><br><span class="line">  ],</span><br><span class="line">  proxy: &#123;</span><br><span class="line">    &#39;&#x2F;api&#39;: &#123;</span><br><span class="line">      target: &#39;http:www.xxx.com&#39;,</span><br><span class="line">      changeOrigin: true,</span><br><span class="line">      pathRewrite: &#123;</span><br><span class="line">        &#39;^&#x2F;api &#39;: &#39;&#39;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+<h3 id="3-为项目配置固定的ip端口号"><a href="#3-为项目配置固定的ip端口号" class="headerlink" title="3.为项目配置固定的ip端口号"></a>3.为项目配置固定的ip端口号</h3><p>在nuxt.js项目中中，我们是在pagekage.json文件中配置如下设置：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">&quot;config&quot;: &#123;</span><br><span class="line">    &quot;nuxt&quot;: &#123;</span><br><span class="line">      &quot;host&quot;: &quot;0.0.0.0&quot;,</span><br><span class="line">      &quot;port&quot;: &quot;3000&quot;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;,</span><br></pre></td></tr></table></figure>
+<p>而本人之前在普通vue项目中，遇到过在vue.config.js设置了固定端口号，可是项目运行起来并不是我原来想要的端口号，在网上找到的方法是：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npm install portfinder@1.0.21</span><br></pre></td></tr></table></figure>
+<p>运行这个命令就可</p>
+<h3 id="4-跨域身份验证"><a href="#4-跨域身份验证" class="headerlink" title="4.跨域身份验证"></a>4.跨域身份验证</h3><p>1）package.json配置：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  &quot;name&quot;: &quot;example-auth-jwt&quot;,</span><br><span class="line">  &quot;dependencies&quot;: &#123;</span><br><span class="line">    &quot;cookieparser&quot;: &quot;^0.1.0&quot;,</span><br><span class="line">    &quot;js-cookie&quot;: &quot;^2.2.0&quot;,</span><br><span class="line">    &quot;nuxt&quot;: &quot;latest&quot;</span><br><span class="line">  &#125;,</span><br><span class="line">  &quot;scripts&quot;: &#123;</span><br><span class="line">    &quot;dev&quot;: &quot;nuxt&quot;,</span><br><span class="line">    &quot;build&quot;: &quot;nuxt build&quot;,</span><br><span class="line">    &quot;start&quot;: &quot;nuxt start&quot;,</span><br><span class="line">    &quot;post-update&quot;: &quot;yarn upgrade --latest&quot;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>2)vuex配置：即store文件夹中的index.js配置</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">const cookieparser &#x3D; process.server ? require(&#39;cookieparser&#39;) : undefined</span><br><span class="line"></span><br><span class="line">export const state &#x3D; () &#x3D;&gt; &#123;</span><br><span class="line">  return &#123;</span><br><span class="line">    auth: null</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line">export const mutations &#x3D; &#123;</span><br><span class="line">  setAuth (state, auth) &#123;</span><br><span class="line">    state.auth &#x3D; auth</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line">export const actions &#x3D; &#123;</span><br><span class="line">  nuxtServerInit (&#123; commit &#125;, &#123; req &#125;) &#123;</span><br><span class="line">    let auth &#x3D; null</span><br><span class="line">    if (req.headers.cookie) &#123;</span><br><span class="line">      const parsed &#x3D; cookieparser.parse(req.headers.cookie)</span><br><span class="line">      try &#123;</span><br><span class="line">        auth &#x3D; JSON.parse(parsed.auth)</span><br><span class="line">      &#125; catch (err) &#123;</span><br><span class="line">        &#x2F;&#x2F; No valid cookie found</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    commit(&#39;setAuth&#39;, auth)</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>登录页配置：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">&lt;script&gt;</span><br><span class="line">const Cookie &#x3D; process.client ? require(&#39;js-cookie&#39;) : undefined</span><br><span class="line"></span><br><span class="line">export default &#123;</span><br><span class="line">  middleware: &#39;notAuthenticated&#39;,</span><br><span class="line">  methods: &#123;</span><br><span class="line">    postLogin () &#123;</span><br><span class="line">      setTimeout(() &#x3D;&gt; &#123; &#x2F;&#x2F; we simulate the async request with timeout.</span><br><span class="line">        const auth &#x3D; &#123;</span><br><span class="line">          accessToken: &#39;someStringGotFromApiServiceWithAjax&#39;</span><br><span class="line">        &#125;</span><br><span class="line">        this.$store.commit(&#39;setAuth&#39;, auth) &#x2F;&#x2F; mutating to store for client rendering</span><br><span class="line">        Cookie.set(&#39;auth&#39;, auth) &#x2F;&#x2F; saving token in cookie for server rendering</span><br><span class="line">        this.$router.push(&#39;&#x2F;&#39;)</span><br><span class="line">      &#125;, 1000)</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line">&lt;&#x2F;script&gt;</span><br></pre></td></tr></table></figure>
+<p>这样，我们就能做出一个跨域带身份认证的登陆了，登录后的信息存在store里面，只要调用this.$store.state.auth即可拿到。</p>
+<h2 id="结束语"><a href="#结束语" class="headerlink" title="结束语"></a>结束语</h2><p>nuxt.js还有很多优秀的功能供我们使用，但小编的体验还不够深入，所以暂时只能介绍这么多了。以后对nuxt.js有了更深入的体验，再来进一步更新。感恩观看！</p>
+<p>@by 曾晓霞</p>
+
+    </div>
+
+    
+    
+    
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>曾晓霞
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="http://yoursite.com/2019/01/03/technique-sharing/2019/nuxt.js%D1%A7%CF%B0/" title="nuxt.js">http://yoursite.com/2019/01/03/technique-sharing/2019/nuxt.jsѧϰ/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/js/" rel="tag"># js</a>
+              <a href="/tags/nuxt/" rel="tag"># nuxt</a>
+              <a href="/tags/vue-ssr/" rel="tag"># vue ssr</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2019/01/02/technique-sharing/2019/mock.js%E5%AD%A6%E4%B9%A0/" rel="prev" title="mockjs的使用">
+      <i class="fa fa-chevron-left"></i> mockjs的使用
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2019/01/03/technique-sharing/2019/nuxt.js%E5%AD%A6%E4%B9%A0/" rel="next" title="nuxt.js">
+      nuxt.js <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#nuxt-js简介"><span class="nav-number">1.</span> <span class="nav-text">nuxt.js简介</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-服务端渲染与客户端渲染"><span class="nav-number">1.1.</span> <span class="nav-text">(1)服务端渲染与客户端渲染</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-Vue-ssr"><span class="nav-number">1.2.</span> <span class="nav-text">(2)Vue ssr</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-nuxt-js的使用"><span class="nav-number">1.3.</span> <span class="nav-text">(3)nuxt.js的使用</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#nuxt-js一些常用操作"><span class="nav-number">2.</span> <span class="nav-text">nuxt.js一些常用操作</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#关于路由"><span class="nav-number">2.1.</span> <span class="nav-text">关于路由</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-路由跳转"><span class="nav-number">2.2.</span> <span class="nav-text">(1)路由跳转</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-关于带参数的路由地址校验"><span class="nav-number">2.3.</span> <span class="nav-text">(2)关于带参数的路由地址校验</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-页面是否必须已登录才能访问"><span class="nav-number">2.4.</span> <span class="nav-text">(3)页面是否必须已登录才能访问</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#axios跨域请求"><span class="nav-number">2.5.</span> <span class="nav-text">axios跨域请求</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-为项目配置固定的ip端口号"><span class="nav-number">2.6.</span> <span class="nav-text">3.为项目配置固定的ip端口号</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-跨域身份验证"><span class="nav-number">2.7.</span> <span class="nav-text">4.跨域身份验证</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#结束语"><span class="nav-number">3.</span> <span class="nav-text">结束语</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Mandy</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">22</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">18</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/jiezaizone" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;jiezaizone" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Mandy</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://mist.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","model":{"scale":1,"hHeadPos":0.5,"vHeadPos":0.618,"jsonPath":"/live2dw/assets/shizuku.model.json"},"display":{"superSample":2,"width":150,"height":300,"position":"left","hOffset":0,"vOffset":-20},"mobile":{"show":false,"scale":0.5},"react":{"opacityDefault":0.7,"opacityOnHover":0.2},"log":false,"tagMode":false});</script></body>
+</html>

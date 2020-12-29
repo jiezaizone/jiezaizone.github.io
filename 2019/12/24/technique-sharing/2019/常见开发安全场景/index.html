@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"yoursite.com","root":"/","scheme":"Mist","version":"7.7.2","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="1. 常见开发场景安全1.1 敏感信息使用场景 敏感信息指用户的 身份证号、银行卡号、手机号 等身份信息。重要敏感信息的脱敏规范如下。    敏感信息类型 展示规范    身份证 显示前 1 位 + (实际位数) + 后 1 位，如： 3***3   银行卡 显示前 6 位 + (实际位数) + 后 4 位，如：622575*****1496   手机号 显示前 3 位 + ** + 后 4 位，">
+<meta property="og:type" content="article">
+<meta property="og:title" content="常见开发场景安全">
+<meta property="og:url" content="http://yoursite.com/2019/12/24/technique-sharing/2019/%E5%B8%B8%E8%A7%81%E5%BC%80%E5%8F%91%E5%AE%89%E5%85%A8%E5%9C%BA%E6%99%AF/index.html">
+<meta property="og:site_name" content="技术分享">
+<meta property="og:description" content="1. 常见开发场景安全1.1 敏感信息使用场景 敏感信息指用户的 身份证号、银行卡号、手机号 等身份信息。重要敏感信息的脱敏规范如下。    敏感信息类型 展示规范    身份证 显示前 1 位 + (实际位数) + 后 1 位，如： 3***3   银行卡 显示前 6 位 + (实际位数) + 后 4 位，如：622575*****1496   手机号 显示前 3 位 + ** + 后 4 位，">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://upload.cc/i1/2019/11/07/BTJlEQ.png">
+<meta property="og:image" content="https://upload.cc/i1/2019/11/07/jiIFeG.png">
+<meta property="og:image" content="https://upload.cc/i1/2019/11/07/LwO9vm.png">
+<meta property="og:image" content="https://upload.cc/i1/2019/11/07/1oVrD2.png">
+<meta property="og:image" content="https://upload.cc/i1/2019/11/12/cp84SX.png">
+<meta property="og:image" content="https://upload.cc/i1/2019/11/12/ZPw3A0.png">
+<meta property="og:image" content="https://upload.cc/i1/2019/11/12/cT0zLt.png">
+<meta property="og:image" content="https://upload.cc/i1/2019/11/12/x5PD7X.png">
+<meta property="og:image" content="https://upload.cc/i1/2019/11/07/4Xv8mo.png">
+<meta property="og:image" content="https://user-gold-cdn.xitu.io/2019/9/17/16d3cd8c79ed1324?imageslim">
+<meta property="og:image" content="http://yoursite.com/2019/12/24/technique-sharing/2019/%E5%B8%B8%E8%A7%81%E5%BC%80%E5%8F%91%E5%AE%89%E5%85%A8%E5%9C%BA%E6%99%AF/study-images/16">
+<meta property="og:image" content="http://www.ruanyifeng.com/blogimg/asset/2016/bg2016091303.png">
+<meta property="og:image" content="https://upload.cc/i1/2019/11/12/OBglV1.png">
+<meta property="og:image" content="https://upload.cc/i1/2019/11/12/579cN0.png">
+<meta property="article:published_time" content="2019-12-24T15:29:08.000Z">
+<meta property="article:modified_time" content="2020-03-25T10:24:48.177Z">
+<meta property="article:author" content="Mandy">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://upload.cc/i1/2019/11/07/BTJlEQ.png">
+
+<link rel="canonical" href="http://yoursite.com/2019/12/24/technique-sharing/2019/%E5%B8%B8%E8%A7%81%E5%BC%80%E5%8F%91%E5%AE%89%E5%85%A8%E5%9C%BA%E6%99%AF/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>常见开发场景安全 | 技术分享</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">技术分享</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+  <a href="https://github.com/jiezaizone" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/12/24/technique-sharing/2019/%E5%B8%B8%E8%A7%81%E5%BC%80%E5%8F%91%E5%AE%89%E5%85%A8%E5%9C%BA%E6%99%AF/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Mandy">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="技术分享">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          常见开发场景安全
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-12-24 23:29:08" itemprop="dateCreated datePublished" datetime="2019-12-24T23:29:08+08:00">2019-12-24</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-03-25 18:24:48" itemprop="dateModified" datetime="2020-03-25T18:24:48+08:00">2020-03-25</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="1-常见开发场景安全"><a href="#1-常见开发场景安全" class="headerlink" title="1. 常见开发场景安全"></a>1. 常见开发场景安全</h1><h2 id="1-1-敏感信息使用场景"><a href="#1-1-敏感信息使用场景" class="headerlink" title="1.1 敏感信息使用场景"></a>1.1 敏感信息使用场景</h2><p> 敏感信息指用户的 身份证号、银行卡号、手机号 等身份信息。重要敏感信息的脱敏规范如下。</p>
+<table>
+<thead>
+<tr>
+<th>敏感信息类型</th>
+<th>展示规范</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>身份证</td>
+<td>显示前 1 位 + <em>(实际位数) + 后 1 位，如： 3<strong><strong><strong>***</strong></strong></strong></em>3</td>
+</tr>
+<tr>
+<td>银行卡</td>
+<td>显示前 6 位 + <em>(实际位数) + 后 4 位，如：622575*****</em>1496</td>
+</tr>
+<tr>
+<td>手机号</td>
+<td>显示前 3 位 + <strong>** + 后 4 位，如：137**</strong>9050</td>
+</tr>
+</tbody></table>
+<a id="more"></a>
+<h3 id="1-1-1-敏感信息用于展示的场景"><a href="#1-1-1-敏感信息用于展示的场景" class="headerlink" title="1.1.1 敏感信息用于展示的场景"></a>1.1.1 <span id="1.1.1">敏感信息用于展示的场景</span></h3><ul>
+<li>原则：敏感信息的展示请严格按照脱敏规范进行脱敏<ul>
+<li>说明：脱敏的逻辑必须在服务端完成，不能使用 Javascript 在客户端进行脱敏，包括代码注释、隐藏域、url 参数、cookies 等处的数据也必须脱敏。</li>
+<li>说明：不能使用可逆的编码/加密方式，如 base64 编码等代替脱敏规范。</li>
+<li>说明：若敏感信息明文展示在应用中，没有按照脱敏规范完成脱敏。支付宝开放平台将有权暂停敏感数据相关接口的开放。</li>
+</ul>
+</li>
+</ul>
+<h3 id="1-1-2-敏感信息用于身份校验的场景"><a href="#1-1-2-敏感信息用于身份校验的场景" class="headerlink" title="1.1.2 敏感信息用于身份校验的场景"></a>1.1.2 <span id="1.1.2">敏感信息用于身份校验的场景</span></h3><ul>
+<li>原则：不要直接将敏感信息的明文信息在客户端与服务端之间传递<ul>
+<li>说明：可以将敏感信息在服务端关联到用户标识 ID，在客户端保存用户标识 ID 并提交到服务端，服务端根据 ID 取出对应信息后进行校验。</li>
+<li>说明：如果服务端没有用户标识 ID 的机制，同时也必须在客户端与服务端之间传递敏感信息，请使用 AES128 对称加密算法进行加密后传输，并且不能将解密密钥传输给用户端。</li>
+</ul>
+</li>
+</ul>
+<h2 id="1-2-HTML-页面渲染"><a href="#1-2-HTML-页面渲染" class="headerlink" title="1.2. HTML 页面渲染"></a>1.2. HTML 页面渲染</h2><ul>
+<li><p>原则：所有在页面渲染的敏感数据 (身份证、银行卡号、手机号) 必须进行脱敏</p>
+<ul>
+<li>说明：参考章节 <a href="#1.1.1">1.1.1. 敏感信息用于展示的场景</a></li>
+</ul>
+</li>
+<li><p>原则：禁止在 Cookie 中 明文写入 敏感数据</p>
+<ul>
+<li>说明：参考章节 <a href="#1.1.2">1.1.2. 敏感信息用于用于身份校验的场景</a></li>
+</ul>
+</li>
+<li><p>原则：禁止向 HTML 页面输出未经安全过滤或未正确转义的用户数据</p>
+<ul>
+<li>说明：用户数据不仅仅包括用户正常数据，同时包括攻击者可修改，伪造的其他数据。</li>
+<li>说明：参考章节 <a href="#2.2">2.2 跨站脚本（XSS）漏洞</a></li>
+</ul>
+</li>
+<li><p>原则：HTML 页面动态输出 JSON、JavaScript 必须对其中的字符串值做 XSS 防御处理</p>
+<ul>
+<li>说明：参考章节 <a href="#2.2">2.2 跨站脚本（XSS）漏洞</a></li>
+</ul>
+</li>
+<li><p>原则：默认设置 HTTP Header 中的 HttpOnly 属性为 true</p>
+<ul>
+<li>说明：设置 HttpOnly 为 true，将可以禁止 JavaScript 读取页面 Cookie 信息，一定程度上防范 XSS 攻击。</li>
+<li>说明：参考章节 <a href="#2.2">2.2 跨站脚本（XSS）漏洞</a></li>
+</ul>
+</li>
+<li><p>原则：如果网站使用 HTTPS 协议，默认设置 HTTP Header 中的 secure 属性为 true</p>
+<ul>
+<li>说明：设置 secure 为 true，Cookie 信息将不会在 HTTP 连接中传输，一定程度上防范 XSS 攻击。</li>
+<li>说明：参考章节 <a href="#2.2">2.2 跨站脚本（XSS）漏洞</a></li>
+</ul>
+</li>
+</ul>
+<h2 id="1-3-接口调用操作"><a href="#1-3-接口调用操作" class="headerlink" title="1.3. 接口调用操作"></a>1.3. 接口调用操作</h2><ul>
+<li><p>原则：AJAX 接口必须执行 CSRF 过滤</p>
+<ul>
+<li>说明：参考章节 <a href="#2.6">2.6 CSRF 漏洞</a></li>
+</ul>
+</li>
+<li><p>原则：AJAX 接口输出 JSON 字符串禁止通过字符串拼接构造，且输出的 JSON 需要经过安全过滤</p>
+<ul>
+<li>说明：参考章节 <a href="#2.2">2.2 跨站脚本（XSS）漏洞</a></li>
+</ul>
+</li>
+<li><p>原则：AJAX 接口返回头必须设置 Content-Type 为 application/json;charset=utf-8</p>
+</li>
+</ul>
+<h2 id="1-4-表单提交操作"><a href="#1-4-表单提交操作" class="headerlink" title="1.4. 表单提交操作"></a>1.4. 表单提交操作</h2><ul>
+<li><p>原则：统一使用 POST 方式提交表单</p>
+<ul>
+<li>说明：Get 请求可以通过构造 img 等标签发起，造成 CSRF</li>
+<li>说明：参考章节 <a href="#2.6">2.6 CSRF 漏洞</a></li>
+</ul>
+</li>
+<li><p>原则：Form 表单提交必须执行 CSRF 过滤</p>
+<ul>
+<li>说明：参考章节<a href="#2.6">2.6 CSRF 漏洞</a></li>
+</ul>
+</li>
+<li><p>原则：用户输入的富文本浏览器展示之前必须由服务器端做安全过滤</p>
+<ul>
+<li>说明：参考章节 <a href="#2.2">2.2 跨站脚本（XSS）漏洞</a></li>
+</ul>
+</li>
+</ul>
+<h2 id="1-5-数据库操作"><a href="#1-5-数据库操作" class="headerlink" title="1.5. 数据库操作"></a>1.5. 数据库操作</h2><ul>
+<li>原则：编写的 SQL 必须预编译，不允许通过字符串拼接的方式合成<ul>
+<li>说明：部分特殊场景，必须通过拼接合成，则拼接的变量必须经过处理，只允许 [a-zA-Z0-9_-.]＋ 字符。</li>
+<li>说明：参考章节 <a href="#2.5">2.5 SQL 注入漏洞</a></li>
+</ul>
+</li>
+</ul>
+<h2 id="1-6-跨域操作"><a href="#1-6-跨域操作" class="headerlink" title="1.6. 跨域操作"></a>1.6. 跨域操作</h2><h3 id="1-6-1-JSONP-跨域"><a href="#1-6-1-JSONP-跨域" class="headerlink" title="1.6.1. JSONP 跨域"></a>1.6.1. JSONP 跨域</h3><ul>
+<li>原则：JSONP 接口 Callback 必须验证有效性</li>
+<li>原则：JSONP 接口输出 JSON 字符串禁止通过字符串拼接构造，且输出的 JSON 需要经过安全过滤<ul>
+<li>说明：参考章节 <a href="#2.2">2.2 跨站脚本（XSS）漏洞</a></li>
+</ul>
+</li>
+<li>原则：JSONP 接口必须对 Referer 进行白名单校验，或执行 CSRF 检查</li>
+<li>原则：JSONP 接口返回头必须正确设置 Content-Type 为 application/javascript;charset=utf-8</li>
+</ul>
+<h3 id="1-6-2-CORS-跨域"><a href="#1-6-2-CORS-跨域" class="headerlink" title="1.6.2. CORS 跨域"></a>1.6.2. CORS 跨域</h3><ul>
+<li>原则：支持 CORS 跨域的接口，返回头 Access-Control-Allow-Origin 必须使用白名单验证，禁止直接返回*</li>
+</ul>
+<h2 id="1-7-文件上传与下载"><a href="#1-7-文件上传与下载" class="headerlink" title="1.7 文件上传与下载"></a>1.7 文件上传与下载</h2><ul>
+<li>原则：限制可下载文件所在的目录为预期范围，并通过指定文件编号的方式来定位待下载文件<ul>
+<li>说明：参考章节 <a href="#2.4">2.4 目录遍历漏洞</a></li>
+<li>说明：参考章节 <a href="#2.4">文件下载漏洞</a></li>
+</ul>
+</li>
+<li>原则：保存上传文件的目录不提供直接访问</li>
+<li>原则：对上传文件的大小和类型进行校验，定义上传文件类型白名单<ul>
+<li>说明：参考章节 <a href="#2.4">文件上传漏洞</a></li>
+</ul>
+</li>
+</ul>
+<h1 id="2-常见安全漏洞及修复方案"><a href="#2-常见安全漏洞及修复方案" class="headerlink" title="2. 常见安全漏洞及修复方案"></a>2. 常见安全漏洞及修复方案</h1><h2 id="2-1-源代码仓库安全"><a href="#2-1-源代码仓库安全" class="headerlink" title="2.1  源代码仓库安全"></a>2.1  源代码仓库安全</h2><p>源代码泄露也不是个新的话题了。但前段时间的“B站工程源码泄露”又把源代码泄露推上了热搜。</p>
+<p>那么问题来了，源代码是怎么被泄露的怎么能预防呢？</p>
+<p>源代码的泄露大部分都是在 <code>源代码仓库</code>，<code>内部泄露</code>和<code>线上项目文件权限设置问题</code>，接下来我们来重点讲解一下 <code>源代码仓库</code> 这种。这种方式最为普遍，危险程度也是最高的。</p>
+<p>在<code>源代码仓库</code>泄露代码也分为很多种 密码被破解、仓库权限设置错误、宿主机漏洞、Web 程序漏洞、SSH 漏洞等等。</p>
+<p>我们拿<code>仓库权限</code>举个栗子：</p>
+<h3 id="挖掘"><a href="#挖掘" class="headerlink" title="挖掘"></a>挖掘</h3><p>利用搜索引擎的高级搜索来搜索一些gitlab私服，这里我提供了以下几种关键字可以去搜索gitlab私服：</p>
+<p>谷歌：<a href="https://www.google.com/search?q=allinurl%3Acn+%2B+%2Fexplore%2Fprojects&oq=allinurl%3Acn+%2B+%2Fexplore%2Fprojects&aqs=chrome..69i57j69i58j69i60.1422j0j9&sourceid=chrome&ie=UTF-8" target="_blank" rel="noopener">allinurl:cn + /explore/projects</a></p>
+<p>谷歌：<a href="https://www.google.com/search?safe=active&sxsrf=ACYBGNRk0K-Saxyd2iBaNxORQjLnmnNKsw%3A1573098014524&ei=HpLDXZ7DH9bZhwOO7YPQCA&q=%E6%B5%8F%E8%A7%88%E9%A1%B9%E7%9B%AE%2C%E7%BE%A4%E7%BB%84%E5%92%8C%E4%BB%A3%E7%A0%81%E7%89%87%E6%AE%B5%E3%80%82%E4%B8%8E%E4%BB%96%E4%BA%BA%E5%88%86%E4%BA%AB%E6%82%A8%E7%9A%84%E9%A1%B9%E7%9B%AE&oq=%E6%B5%8F%E8%A7%88%E9%A1%B9%E7%9B%AE%2C%E7%BE%A4%E7%BB%84%E5%92%8C%E4%BB%A3%E7%A0%81%E7%89%87%E6%AE%B5%E3%80%82%E4%B8%8E%E4%BB%96%E4%BA%BA%E5%88%86%E4%BA%AB%E6%82%A8%E7%9A%84%E9%A1%B9%E7%9B%AE&gs_l=psy-ab.3..35i39.58956.58956..59128...0.0..0.98.98.1......0....2j1..gws-wiz.DkcTrcCS_UU&ved=0ahUKEwieyujiltflAhXW7GEKHY72AIoQ4dUDCAs&uact=5" target="_blank" rel="noopener">浏览项目,群组和代码片段。与他人分享您的项目</a></p>
+<p>百度：<a href="https://www.baidu.com/s?ie=utf-8&f=8&rsv_bp=1&ch=3&tn=98010089_dg&wd=%E9%A1%B9%E7%9B%AE%C2%B7%20%E6%8E%A2%E7%B4%A2%C2%B7%20GitLab%20-%20%E7%99%BB%E5%BD%95%C2%B7%20GitLab&oq=%25E6%25B5%258F%25E8%25A7%2588%25E9%25A1%25B9%25E7%259B%25AE%252C%25E7%25BE%25A4%25E7%25BB%2584%25E5%2592%258C%25E4%25BB%25A3%25E7%25A0%2581%25E7%2589%2587%25E6%25AE%25B5%25E3%2580%2582%25E4%25B8%258E%25E4%25BB%2596%25E4%25BA%25BA%25E5%2588%2586%25E4%25BA%25AB%25E6%2582%25A8%25E7%259A%2584%25E9%25A1%25B9%25E7%259B%25AE&rsv_pq=e75cc08d0005f615&rsv_t=ca5dM1ytGKtvDf%2Br5X6uRql5pkfiySg%2BNW%2BCeQGnF0mIantQOdF%2BOg6rFbDtvPyAaE4&rqlang=cn&rsv_enter=1&rsv_dl=tb&inputT=314&rsv_sug3=6&rsv_n=2&rsv_sug2=0&rsv_sug4=598" target="_blank" rel="noopener">项目· 探索· GitLab - 登录· GitLab</a></p>
+<p>搜索结果大概如下：<br><img src="https://upload.cc/i1/2019/11/07/BTJlEQ.png" alt="images"></p>
+<p>我们发现了很多gitlab私服，我们随便点击几个就发现了很多权限设置为公开的项目，这些项目我们分分钟都可以同步回本地，这些仓库都带了全部的代码提交以及操作记录。</p>
+<p><img src="https://upload.cc/i1/2019/11/07/jiIFeG.png" alt="image"></p>
+<h2 id="利用案例"><a href="#利用案例" class="headerlink" title="利用案例"></a>利用案例</h2><p>这里随便搜集了几个私服地址：</p>
+<p><a href="http://gitlab.gongwuyun.cn/explore/projects" target="_blank" rel="noopener">http://gitlab.gongwuyun.cn/explore/projects</a></p>
+<p><a href="http://git.neweservice.com/explore/projects" target="_blank" rel="noopener">http://git.neweservice.com/explore/projects</a></p>
+<p><a href="http://www.shenjia.net/explore/projects" target="_blank" rel="noopener">http://www.shenjia.net/explore/projects</a></p>
+<blockquote>
+<p>代码泄露还不是最危险的。最危险的是代码里面的各种硬编码、密钥以及证书！！！</p>
+</blockquote>
+<h3 id="防范方式"><a href="#防范方式" class="headerlink" title="防范方式"></a>防范方式</h3><ol>
+<li><p>使用强密码降低被破解的风险，开启双重身份验证，使用SSH密钥等……</p>
+</li>
+<li><p>定期更新系统安全补丁，升级应用版本。</p>
+</li>
+<li><p>项目权限设置：<code>管理中心 &gt; 通用 &gt; 可见性与访问控制</code><br><img src="https://upload.cc/i1/2019/11/07/LwO9vm.png" alt="image"></p>
+</li>
+<li><p>定期检查开放的项目 <code>管理中心 &gt; 项目 &gt; 公开</code><br><img src="https://upload.cc/i1/2019/11/07/1oVrD2.png" alt="image"></p>
+</li>
+</ol>
+<h2 id="2-2-跨站脚本攻击—XSS"><a href="#2-2-跨站脚本攻击—XSS" class="headerlink" title="2.2 跨站脚本攻击—XSS"></a><span id="2.2">2.2 跨站脚本攻击—XSS</span></h2><h3 id="漏洞描述"><a href="#漏洞描述" class="headerlink" title="漏洞描述"></a>漏洞描述</h3><p>跨站脚本攻击(Cross Site Scripting, XSS)发生在客户端，可被用于进行窃取隐私、钓鱼欺骗、偷取密码、传播恶意代码等攻击行为。<br>XSS 攻击，==一般是指攻击者通过在网页中注入恶意脚本，当用户浏览网页时，恶意脚本执行，控制用户浏览器行为的一种攻击方式==。</p>
+<p>XSS 攻击类型一般分为两类：</p>
+<ul>
+<li>==Reflected XSS（反射型的 XSS 攻击）==</li>
+<li>==Stored XSS（存储型的 XSS 攻击）==</li>
+</ul>
+<p>==两类下有分为若干种方式（例：DOM-based、JSONP XSS）==。</p>
+<p><code>反射型 XSS</code> 和 <code>DOM 型 XSS</code> 算是 <code>非持久型 XSS 攻击</code>，而 <code>存储型 XSS</code> 算是 <code>持久型 XSS 攻击</code>。</p>
+<h3 id="2-2-1-Reflected-XSS（反射型的-XSS-攻击）"><a href="#2-2-1-Reflected-XSS（反射型的-XSS-攻击）" class="headerlink" title="2.2.1 Reflected XSS（反射型的 XSS 攻击）"></a>2.2.1 Reflected XSS（反射型的 XSS 攻击）</h3><blockquote>
+<p>反射型XSS，非持久化，用户通过Web客户端提交给服务端的数据，立刻用于解析和显示该用户的结果页面(数据没有在服务端存储)</p>
+</blockquote>
+<h4 id="漏洞描述-1"><a href="#漏洞描述-1" class="headerlink" title="漏洞描述"></a>漏洞描述</h4><p>攻击者诱导用户访问一个带有恶意代码的URL后，服务器端接收数据后处理，然后把带有恶意代码的数据发送到浏览器端，浏览器端解析这段带有 XSS 代码的数据后当做脚本执行，最终完成 XSS 攻击。<br>因为这个过程就像一次反射，故称为反射型 XSS。</p>
+<h4 id="攻击步骤："><a href="#攻击步骤：" class="headerlink" title="攻击步骤："></a>攻击步骤：</h4><ol>
+<li>攻击构造出特殊的 URL ，其中包含恶意代码。</li>
+<li>用户被诱导打开带有恶意代码的 URL，服务器端将恶意代码从 URL 中取出当做参数处理，然后返回给用户带有恶意代码的数据。</li>
+<li>用户浏览器接收到响应解析执行，混在其中的恶意代码也被执行。</li>
+<li>恶意代码窃取用户敏感数据发送给攻击者，或者冒充用户的行为，调用目标网站接口执行攻击者指定的操作。</li>
+</ol>
+<h4 id="举个栗子："><a href="#举个栗子：" class="headerlink" title="举个栗子："></a>举个栗子：</h4><p>我们接收一个Name的参数然后把它显示在界面。</p>
+<p><img src="https://upload.cc/i1/2019/11/12/cp84SX.png" alt="image"><br><img src="https://upload.cc/i1/2019/11/12/ZPw3A0.png" alt="image"></p>
+<p>下面是一个正常的流程</p>
+<p><a href="http://127.0.0.1:888/ReflectedXSS?name=User" target="_blank" rel="noopener">http://127.0.0.1:888/ReflectedXSS?name=User</a></p>
+<p><img src="https://upload.cc/i1/2019/11/12/cT0zLt.png" alt="image"></p>
+<p>显示效果正常。</p>
+<p>因为这里没有对用户输入的数据做处理，所以我们构造这样一个链接：</p>
+<p><a href="http://127.0.0.1:888/ReflectedXSS?name=%3Cscript%3Ealert(%22xss%22)%3C/script%3E" target="_blank" rel="noopener">http://127.0.0.1:888/ReflectedXSS?name=%3Cscript%3Ealert(%22xss%22)%3C/script%3E</a></p>
+<p>然后诱导他人点击这个链接，就可以完成一次反射型 XSS 攻击。</p>
+<p><img src="https://upload.cc/i1/2019/11/12/x5PD7X.png" alt="image"></p>
+<p>==假如客户认识XSS，看见链接有js代码不访问了怎么办？我们还可以伪装伪装，转为短网址或者二维码==。</p>
+<p>短网址：<a href="http://i6q.cn/4YSo03" target="_blank" rel="noopener">http://i6q.cn/4YSo03</a></p>
+<p>也许你觉得只是一个弹框而已，问题不大，但如果我们把攻击代码变为加载一个第三方的 js 文件呢？变为用 <code>document.cookie</code> 盗取 cookie 的代码呢？总之如果是真的攻击的话，就不会只是一个弹框这么简单了。</p>
+<h3 id="2-2-2-Stored-XSS（存储型的-XSS-攻击）"><a href="#2-2-2-Stored-XSS（存储型的-XSS-攻击）" class="headerlink" title="2.2.2 Stored XSS（存储型的 XSS 攻击）"></a>2.2.2 Stored XSS（存储型的 XSS 攻击）</h3><blockquote>
+<p>存储型XSS，持久化，用户通过Web客户端提交给服务端的数据，由服务端保存，然后永久显示在其他用户的页面上。</p>
+</blockquote>
+<h4 id="漏洞描述-2"><a href="#漏洞描述-2" class="headerlink" title="漏洞描述"></a>漏洞描述</h4><p>存储型 XSS 跟 反射型 XSS 的区别是：==存储型 XSS 的恶意代码存在服务器上，反射型 XSS 的恶意代码存在 URL 里==。</p>
+<p>存储型 XSS 攻击时恶意脚本会存储在目标服务器上。当浏览器请求数据时，脚本从服务器传回并执行。它是最危险的一种跨站脚本，比反射性 XSS 和 DOM 型 XSS 都更有隐蔽性，因为它不需要用户手动触发。任何允许用户存储数据的 Web 程序都可能存在存储型 XSS 漏洞。若某个页面遭受存储型 XSS 攻击，所有访问该页面的用户都会被 XSS 攻击。</p>
+<blockquote>
+<p>基于存储的 XSS 攻击，是通过提交带有恶意脚本的内容存储在服务器上，当其他人看到这些内容时发起 Web 攻击。一般提交的内容都是通过一些富文本编辑器编辑的，很容易插入危险代码。</p>
+</blockquote>
+<h4 id="攻击步骤：-1"><a href="#攻击步骤：-1" class="headerlink" title="攻击步骤："></a>攻击步骤：</h4><ol>
+<li>攻击者把恶意代码提交到目标网站的服务器中。</li>
+<li>用户打开目标网站，网站服务器端把带有恶意代码的数据取出，当做正常数据返回给用户。</li>
+<li>用户浏览器接收到响应解析执行，混在其中的恶意代码也被执行。</li>
+<li>恶意代码窃取用户敏感数据发送给攻击者，或者冒充用户的行为，调用目标网站接口执行攻击者指定的操作。</li>
+</ol>
+<p><img src="https://upload.cc/i1/2019/11/07/4Xv8mo.png" alt="image"></p>
+<h4 id="举个栗子：-1"><a href="#举个栗子：-1" class="headerlink" title="举个栗子："></a>举个栗子：</h4><p><a href="https://www.kkkk1000.com/xss/Stored/index.html" target="_blank" rel="noopener">https://www.kkkk1000.com/xss/Stored/index.html</a></p>
+<p><img src="https://user-gold-cdn.xitu.io/2019/9/17/16d3cd8c79ed1324?imageslim" alt="image"></p>
+<p>但是，评论的内容是没有处理过的，所以我们如果输入这样的内容：<br><code>&lt;script&gt;alert(&quot;xss&quot;)&lt;/script&gt;</code><br>同样是可以作为评论的。</p>
+<p>我们用这样的内容作为评论后，所有打开这篇文章的用户都会遭到存储型 XSS 攻击。</p>
+<p><img src="./study-images/16" alt="image"></p>
+<h3 id="XSS-防御"><a href="#XSS-防御" class="headerlink" title="XSS 防御"></a>XSS 防御</h3><h4 id="1-浏览器自带防御-（X-XSS-Protection）"><a href="#1-浏览器自带防御-（X-XSS-Protection）" class="headerlink" title="1. 浏览器自带防御 （X-XSS-Protection）"></a>1. 浏览器自带防御 （X-XSS-Protection）</h4><p>HTTP X-XSS-Protection 响应头是 Internet Explorer，Chrome 和 Safari 的一个功能，当检测到跨站脚本攻击(XSS)时，浏览器将停止加载页面。<br>他可以设置4个值：<br>X-XSS-Protection: 0<br>禁止XSS过滤。     </p>
+<p>X-XSS-Protection: 1<br>启用XSS过滤（通常浏览器是默认的）。 如果检测到跨站脚本攻击，浏览器将清除页面（删除不安全的部分）。  </p>
+<p>X-XSS-Protection: 1; mode=block<br>启用XSS过滤。 如果检测到攻击，浏览器将不会清除页面，而是阻止页面加载。  </p>
+<p>X-XSS-Protection: 1; report=<reporting-uri><br>启用XSS过滤。 如果检测到跨站脚本攻击，浏览器将清除页面并使用CSP report-uri指令的功能发送违规报告。<br>复制代码这种浏览器自带的防御功能只对反射型 XSS 有一定的防御力，其原理是检查 URL 和 DOM 中元素的相关性，但这并不能完全防止反射型 XSS，而且也并不是所有浏览器都支持 X-XSS-Protection。</p>
+<h4 id="2-转义"><a href="#2-转义" class="headerlink" title="2. 转义"></a>2. 转义</h4><p>在 XSS 攻击中，攻击者主要是通过构造特殊字符来注入脚本，所以对用户的输入进行检测就很有必要，并且需要在客户端与服务端都进行输入检测，然后对用户输入的数据进行转义。<br>主要就是对输入所包含的特殊字符进行转义，如 &lt;，&gt;，&amp;，”，’，来防止 XSS 攻击。<br>下面是一个用于转义的方法：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">escapeHTML</span>(<span class="params">str</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (!str) <span class="keyword">return</span> <span class="string">''</span>;</span><br><span class="line">    str = str.replace(<span class="regexp">/&amp;/g</span>, <span class="string">"&amp;amp;"</span>);</span><br><span class="line">    str = str..replace(<span class="regexp">/&lt;/g</span>, <span class="string">"&amp;lt;"</span>);</span><br><span class="line">    str = str..replace(<span class="regexp">/&gt;/g</span>, <span class="string">"&amp;gt;"</span>);</span><br><span class="line">    str = str..replace(<span class="regexp">/"/g</span>, <span class="string">"&amp;quot;"</span>);</span><br><span class="line">    str = str..replace(<span class="regexp">/'/g</span>, <span class="string">"&amp;#39;"</span>);</span><br><span class="line">    <span class="keyword">return</span> str;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+
+<h4 id="3-过滤"><a href="#3-过滤" class="headerlink" title="3. 过滤"></a>3. 过滤</h4><p>在富文本中因为需要保留 HTML ，所以我们不能使用转义的方法防御 XSS 攻击，这里使用过滤的方式防御 XSS 攻击，也就是通过只使用白名单允许的 HTML 标记及其属性，来防御攻击。<br>这里推荐一个名为 ==<a href="https://github.com/leizongmin/js-xss/blob/master/README.zh.md" target="_blank" rel="noopener">XSS</a>== 的组件 ，这就是一个根据白名单过滤 HTML，防止 XSS 攻击的组件。</p>
+<h4 id="4-内容安全策略（CSP）"><a href="#4-内容安全策略（CSP）" class="headerlink" title="4. 内容安全策略（CSP）"></a>4. 内容安全策略（CSP）</h4><p><a href="http://www.ruanyifeng.com/blog/2016/09/csp.html" target="_blank" rel="noopener">内容安全策略（Content Security Policy，CSP）</a>，实质就是白名单制度，开发者明确告诉客户端，哪些外部资源可以加载和执行，大大增强了网页的安全性。</p>
+<p>两种方法可以启用 CSP。<br>一种是通过 HTTP 头信息的 Content-Security-Policy 的字段。<br> <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Content-Security-Policy: script-src &#39;self&#39;; </span><br><span class="line">                         object-src &#39;none&#39;;</span><br><span class="line">                         style-src cdn.example.org third-party.org; </span><br><span class="line">                         child-src https:</span><br></pre></td></tr></table></figure><br>另一种是通过网页的 <meta> 标签。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">&lt;meta http-equiv&#x3D;&quot;Content-Security-Policy&quot;</span><br><span class="line">      content&#x3D;&quot;script-src &#39;self&#39;;</span><br><span class="line">               object-src &#39;none&#39;;</span><br><span class="line">               style-src cdn.example.org third-party.org;</span><br><span class="line">               child-src https:&quot;</span><br><span class="line">&gt;</span><br></pre></td></tr></table></figure>
+
+<p>上面代码中，CSP 做了如下配置。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">- 脚本： 只信任当前域名</span><br><span class="line">- &lt;object&gt;标签： 不信任任何 URL，即不加载任何资源</span><br><span class="line">- 样式表： 只信任 cdn.example.org 和 third-party.org</span><br><span class="line">- 页面子内容，如 &lt;frame&gt;、&lt;iframe&gt;： 必须使用HTTPS协议加载</span><br><span class="line">- 其他资源： 没有限制</span><br></pre></td></tr></table></figure>
+<p>启用后，不符合 CSP 的外部资源就会被阻止加载。</p>
+<p>Chrome 的报错信息。</p>
+<p><img src="http://www.ruanyifeng.com/blogimg/asset/2016/bg2016091303.png" alt="image"></p>
+<p>更多资料访问这里：<a href="http://www.ruanyifeng.com/blog/2016/09/csp.html" target="_blank" rel="noopener">http://www.ruanyifeng.com/blog/2016/09/csp.html</a></p>
+<h4 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h4><p>XSS 攻击的本质就是输入的内容被当做程序执行了，所以我们对于用户输入的内容不能完全的信任，需要考虑如何避免其被当做程序执行。</p>
+<h2 id="2-3-JSONP-XSS"><a href="#2-3-JSONP-XSS" class="headerlink" title="2.3 JSONP XSS"></a>2.3 JSONP XSS</h2><p>先说 JSONP。通过 JavaScript 调用，被调用域名和当前页面域名不一致，就需要用到 JSONP。</p>
+<blockquote>
+<p>浏览器为了保证跨域访问的安全性，会默认发一个 callback 参数到后台，接口拿到这个参数之后，需要将返回的 JSON 数据外面包上 callback 参数。一般而言，利用跨站脚本攻击，攻击者可窃会话 Cookie 从而窃取网站用户的隐私。</p>
+</blockquote>
+<p>JSONP 的 <code>callback</code> 参数非常危险，他有两种风险可能导致 XSS</p>
+<p>1、callback 参数意外截断js代码，特殊字符单引号双引号，换行符均存在风险。</p>
+<p>2、callback 参数恶意添加标签（如 <code>&lt;script&gt;</code> ），造成 XSS 漏洞。</p>
+<p>参考 <a href="http://blog.knownsec.com/2015/03/jsonp_security_technic/" target="_blank" rel="noopener">JSONP 安全攻防</a></p>
+<h3 id="攻击步骤：-2"><a href="#攻击步骤：-2" class="headerlink" title="攻击步骤："></a>攻击步骤：</h3><ol>
+<li>攻击构造出特殊的 URL ，其中包含恶意代码。</li>
+<li>用户被诱导打开带有恶意代码的 URL，服务器端将恶意代码从 URL 中取出当做参数处理，然后返回给用户带有恶意代码的数据。</li>
+<li>用户浏览器接收到响应解析执行，混在其中的恶意代码也被执行。</li>
+<li>恶意代码窃取用户敏感数据发送给攻击者，或者冒充用户的行为，调用目标网站接口执行攻击者指定的操作。</li>
+</ol>
+<p>已经在网站 “A” 登录了。网站 “A”有JSONP XSS。我们在网站 “B” 加载含XSS的链接，攻击成功。</p>
+<p><a href="http://127.0.0.1:888/jsonpHtml" target="_blank" rel="noopener">http://127.0.0.1:888/jsonpHtml</a></p>
+<h3 id="举个栗子：-2"><a href="#举个栗子：-2" class="headerlink" title="举个栗子："></a>举个栗子：</h3><p>在网站 “192.168.3.4:888” 登录设置了Cookie。</p>
+<p><a href="http://192.168.3.4:888/jsonp/login" target="_blank" rel="noopener">http://192.168.3.4:888/jsonp/login</a></p>
+<p><img src="https://upload.cc/i1/2019/11/12/OBglV1.png" alt="image"></p>
+<p>然后在其他地方打开包括有恶意代码的链接。</p>
+<p><a href="http://192.168.3.4:888/jsonp/xss?callback=aaaaaaaaa%3C/script%3E%3Cscript%3Ealert(document.cookie)%3C/script%3E" target="_blank" rel="noopener">http://192.168.3.4:888/jsonp/xss?callback=aaaaaaaaa%3C/script%3E%3Cscript%3Ealert(document.cookie)%3C/script%3E</a></p>
+<p><img src="https://upload.cc/i1/2019/11/12/579cN0.png" alt="image"></p>
+<p>网站“192.168.3.4:888”直接执行了恶意代码。</p>
+<p>防御内容：</p>
+<ul>
+<li>callback 函数名只允许 <code>[</code>, <code>]</code>, <code>a-zA-Z0123456789_</code>, <code>$</code>, <code>.</code>，防止一般的 XSS，utf-7 XSS等攻击。</li>
+<li>后端定义返回头类型</li>
+</ul>
+<h2 id="2-4-目录遍历漏洞"><a href="#2-4-目录遍历漏洞" class="headerlink" title="2.4 目录遍历漏洞"></a><span id="2.4">2.4 目录遍历漏洞</span></h2><h3 id="漏洞描述-3"><a href="#漏洞描述-3" class="headerlink" title="漏洞描述"></a>漏洞描述</h3><p>攻击者向 Web 服务器发送请求，通过在 URL 中或在有特殊意义的目录中附加 ../、或者附加 ../ 的一些变形（如 ..\ 或 ..// 甚至其编码），导致攻击者能够访问未授权的目录，以及在 Web 服务器的根目录以外执行命令。</p>
+<h3 id="解决方案"><a href="#解决方案" class="headerlink" title="解决方案"></a>解决方案</h3><ul>
+<li>严格检查文件路径参数，限制在指定的范围。</li>
+<li>严格限制文件路径参数，不允许用户控制文件路径相关的参数，限定文件路径范围。</li>
+</ul>
+<h3 id="业务漏洞"><a href="#业务漏洞" class="headerlink" title="业务漏洞"></a>业务漏洞</h3><p>一般业务漏洞是跟具体的应用程序相关，比如参数篡改（连续编号 ID / 订单、1 元支付）、重放攻击（伪装支付）、权限控制（越权操作）等。</p>
+<h2 id="2-5-SQL-注入"><a href="#2-5-SQL-注入" class="headerlink" title="2.5 SQL 注入"></a><span id="2.5">2.5 SQL 注入</span></h2><h3 id="漏洞描述-4"><a href="#漏洞描述-4" class="headerlink" title="漏洞描述"></a>漏洞描述</h3><p>SQL 注入攻击(SQL Injection)，被广泛用于非法获取网站控制权，是发生在应用程序的数据库层上的安全漏洞。 在设计不良的程序当中，忽略了对输入字符串中夹带的 SQL 指令的检查，那么这些夹带进去的指令就会被数据库误认为是正常的 SQL 指令而运行，从而使数据库受到攻击，可能导致数据被窃取、更改、删除，以及进一步导致网站被嵌入恶意代码、被植入后门程序等危害。</p>
+<h3 id="解决方案-1"><a href="#解决方案-1" class="headerlink" title="解决方案"></a>解决方案</h3><ul>
+<li>所有的查询语句都使用数据库提供的参数化查询接口，参数化的语句使用参数而不是将用户输入变量嵌入到 SQL 语句中。</li>
+<li>对进入数据库的特殊字符 ‘“&lt;&gt;&amp;*; 等进行转义处理，或编码转换。</li>
+<li>确认每种数据的类型，比如数字型的数据就必须是数字，数据库中的存储字段必须对应为 int 型。</li>
+<li>数据长度应该严格规定，能在一定程度上防止比较长的 SQL 注入语句无法正确执行。</li>
+<li>网站每个数据层的编码统一，建议全部使用 UTF-8 编码，上下层编码不一致有可能导致一些过滤模型被绕过。</li>
+<li>严格限制网站所用数据库账号的权限，给此用户仅提供能够满足其工作的权限，从而最大限度的减少注入攻击对数据库的危害。</li>
+<li>避免网站显示 SQL 错误信息，比如类型错误、字段不匹配等，防止攻击者利用这些错误信息进行一些判断。</li>
+</ul>
+<h2 id="2-6-CSRF-跨站请求伪造"><a href="#2-6-CSRF-跨站请求伪造" class="headerlink" title="2.6 CSRF 跨站请求伪造"></a><span id="2.6">2.6 CSRF 跨站请求伪造</span></h2><h3 id="漏洞描述-5"><a href="#漏洞描述-5" class="headerlink" title="漏洞描述"></a>漏洞描述</h3><p>CSRF（Cross-site request forgery）跨站请求伪造：也被称为“One Click Attack”或者Session Riding，通常缩写为CSRF或者XSRF，是一种对网站的恶意利用。尽管听起来像跨站脚本（XSS），但它与XSS非常不同，XSS利用站点内的信任用户，而CSRF则通过伪装来自受信任用户的请求来利用受信任的网站。与XSS攻击相比，CSRF攻击往往不大流行（因此对其进行防范的资源也相当稀少）和难以防范，所以被认为比XSS更具危险性。</p>
+<p>跨站请求伪造(Cross-Site Request Forgery, CSRF)，恶意网站通过脚本向当前用户浏览器打开的其它页面的 URL 发起恶意请求，由于同一浏览器进程下 Cookie 可见性，导致用户身份被盗用，完成恶意网站脚本中指定的操作。</p>
+<h3 id="解决方案-2"><a href="#解决方案-2" class="headerlink" title="解决方案"></a>解决方案</h3><p>CSRF漏洞修复方案主要思路有两类：</p>
+<ul>
+<li>验证请求是信任页面发起，这类修复方案有：<ul>
+<li>在表单中填充一次性随机的 csrf token 防止攻击者伪造 form 表单进行 CSRF。同时将此串 token 置入 session，在后端再进行一次一致性校验。</li>
+<li>referer 验证。</li>
+</ul>
+</li>
+<li>验证请求是合法用户发起，这类修复方案有：<ul>
+<li>验证码</li>
+<li>密码验证</li>
+<li>OTP 验证</li>
+</ul>
+</li>
+</ul>
+<p>更多：<br><a href="https://codepen.io/rvernagus/pen/xrKOXp" target="_blank" rel="noopener">https://codepen.io/rvernagus/pen/xrKOXp</a></p>
+<p><a href="https://xss-game.appspot.com/level1" target="_blank" rel="noopener">https://xss-game.appspot.com/level1</a></p>
+<p>@ 韦世裔</p>
+
+    </div>
+
+    
+    
+    
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>韦世裔
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="http://yoursite.com/2019/12/24/technique-sharing/2019/%E5%B8%B8%E8%A7%81%E5%BC%80%E5%8F%91%E5%AE%89%E5%85%A8%E5%9C%BA%E6%99%AF/" title="常见开发场景安全">http://yoursite.com/2019/12/24/technique-sharing/2019/常见开发安全场景/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2019/08/24/technique-sharing/2019/%E6%B5%85%E8%B0%88Kafka%E6%A0%B8%E5%BF%83%E5%8E%9F%E7%90%86/" rel="prev" title="浅谈Kafka核心原理">
+      <i class="fa fa-chevron-left"></i> 浅谈Kafka核心原理
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2020/01/13/technique-sharing/2020/vue%E4%B8%AD%E4%BD%BF%E7%94%A8AOS%E5%8A%A8%E7%94%BB%E6%8F%92%E4%BB%B6/" rel="next" title="vue中使用AOS动画插件">
+      vue中使用AOS动画插件 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#1-常见开发场景安全"><span class="nav-number">1.</span> <span class="nav-text">1. 常见开发场景安全</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-1-敏感信息使用场景"><span class="nav-number">1.1.</span> <span class="nav-text">1.1 敏感信息使用场景</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-1-1-敏感信息用于展示的场景"><span class="nav-number">1.1.1.</span> <span class="nav-text">1.1.1 敏感信息用于展示的场景</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-1-2-敏感信息用于身份校验的场景"><span class="nav-number">1.1.2.</span> <span class="nav-text">1.1.2 敏感信息用于身份校验的场景</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-2-HTML-页面渲染"><span class="nav-number">1.2.</span> <span class="nav-text">1.2. HTML 页面渲染</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-3-接口调用操作"><span class="nav-number">1.3.</span> <span class="nav-text">1.3. 接口调用操作</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-4-表单提交操作"><span class="nav-number">1.4.</span> <span class="nav-text">1.4. 表单提交操作</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-5-数据库操作"><span class="nav-number">1.5.</span> <span class="nav-text">1.5. 数据库操作</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-6-跨域操作"><span class="nav-number">1.6.</span> <span class="nav-text">1.6. 跨域操作</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-6-1-JSONP-跨域"><span class="nav-number">1.6.1.</span> <span class="nav-text">1.6.1. JSONP 跨域</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-6-2-CORS-跨域"><span class="nav-number">1.6.2.</span> <span class="nav-text">1.6.2. CORS 跨域</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-7-文件上传与下载"><span class="nav-number">1.7.</span> <span class="nav-text">1.7 文件上传与下载</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#2-常见安全漏洞及修复方案"><span class="nav-number">2.</span> <span class="nav-text">2. 常见安全漏洞及修复方案</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#2-1-源代码仓库安全"><span class="nav-number">2.1.</span> <span class="nav-text">2.1  源代码仓库安全</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#挖掘"><span class="nav-number">2.1.1.</span> <span class="nav-text">挖掘</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#利用案例"><span class="nav-number">2.2.</span> <span class="nav-text">利用案例</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#防范方式"><span class="nav-number">2.2.1.</span> <span class="nav-text">防范方式</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-2-跨站脚本攻击—XSS"><span class="nav-number">2.3.</span> <span class="nav-text">2.2 跨站脚本攻击—XSS</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#漏洞描述"><span class="nav-number">2.3.1.</span> <span class="nav-text">漏洞描述</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-1-Reflected-XSS（反射型的-XSS-攻击）"><span class="nav-number">2.3.2.</span> <span class="nav-text">2.2.1 Reflected XSS（反射型的 XSS 攻击）</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#漏洞描述-1"><span class="nav-number">2.3.2.1.</span> <span class="nav-text">漏洞描述</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#攻击步骤："><span class="nav-number">2.3.2.2.</span> <span class="nav-text">攻击步骤：</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#举个栗子："><span class="nav-number">2.3.2.3.</span> <span class="nav-text">举个栗子：</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-2-Stored-XSS（存储型的-XSS-攻击）"><span class="nav-number">2.3.3.</span> <span class="nav-text">2.2.2 Stored XSS（存储型的 XSS 攻击）</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#漏洞描述-2"><span class="nav-number">2.3.3.1.</span> <span class="nav-text">漏洞描述</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#攻击步骤：-1"><span class="nav-number">2.3.3.2.</span> <span class="nav-text">攻击步骤：</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#举个栗子：-1"><span class="nav-number">2.3.3.3.</span> <span class="nav-text">举个栗子：</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#XSS-防御"><span class="nav-number">2.3.4.</span> <span class="nav-text">XSS 防御</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-浏览器自带防御-（X-XSS-Protection）"><span class="nav-number">2.3.4.1.</span> <span class="nav-text">1. 浏览器自带防御 （X-XSS-Protection）</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-转义"><span class="nav-number">2.3.4.2.</span> <span class="nav-text">2. 转义</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-过滤"><span class="nav-number">2.3.4.3.</span> <span class="nav-text">3. 过滤</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-内容安全策略（CSP）"><span class="nav-number">2.3.4.4.</span> <span class="nav-text">4. 内容安全策略（CSP）</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#总结"><span class="nav-number">2.3.4.5.</span> <span class="nav-text">总结</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-3-JSONP-XSS"><span class="nav-number">2.4.</span> <span class="nav-text">2.3 JSONP XSS</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#攻击步骤：-2"><span class="nav-number">2.4.1.</span> <span class="nav-text">攻击步骤：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#举个栗子：-2"><span class="nav-number">2.4.2.</span> <span class="nav-text">举个栗子：</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-4-目录遍历漏洞"><span class="nav-number">2.5.</span> <span class="nav-text">2.4 目录遍历漏洞</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#漏洞描述-3"><span class="nav-number">2.5.1.</span> <span class="nav-text">漏洞描述</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#解决方案"><span class="nav-number">2.5.2.</span> <span class="nav-text">解决方案</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#业务漏洞"><span class="nav-number">2.5.3.</span> <span class="nav-text">业务漏洞</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-5-SQL-注入"><span class="nav-number">2.6.</span> <span class="nav-text">2.5 SQL 注入</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#漏洞描述-4"><span class="nav-number">2.6.1.</span> <span class="nav-text">漏洞描述</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#解决方案-1"><span class="nav-number">2.6.2.</span> <span class="nav-text">解决方案</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-6-CSRF-跨站请求伪造"><span class="nav-number">2.7.</span> <span class="nav-text">2.6 CSRF 跨站请求伪造</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#漏洞描述-5"><span class="nav-number">2.7.1.</span> <span class="nav-text">漏洞描述</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#解决方案-2"><span class="nav-number">2.7.2.</span> <span class="nav-text">解决方案</span></a></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Mandy</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">22</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">18</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/jiezaizone" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;jiezaizone" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Mandy</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://mist.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","model":{"scale":1,"hHeadPos":0.5,"vHeadPos":0.618,"jsonPath":"/live2dw/assets/shizuku.model.json"},"display":{"superSample":2,"width":150,"height":300,"position":"left","hOffset":0,"vOffset":-20},"mobile":{"show":false,"scale":0.5},"react":{"opacityDefault":0.7,"opacityOnHover":0.2},"log":false,"tagMode":false});</script></body>
+</html>

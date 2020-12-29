@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"yoursite.com","root":"/","scheme":"Mist","version":"7.7.2","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="Macros 何去何从Scala Macro 是 Scala 2.10 版本增加的一个新的语言特性，让开发者可以在编译期动态修改&#x2F;生成代码，为开发工作提供了很大的灵活性。到了Scala 2.12，Scala Macro 基本上没有太多变化，并且直到目前为止，Scala Macro 一直被打着EXPERIMENTAL标签。据scala官网介绍，scala3的目前披露的计划中，scala Macros">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Macros 的一个简单入门教程">
+<meta property="og:url" content="http://yoursite.com/2018/07/04/technique-sharing/2018/scala-macros-20180704/index.html">
+<meta property="og:site_name" content="技术分享">
+<meta property="og:description" content="Macros 何去何从Scala Macro 是 Scala 2.10 版本增加的一个新的语言特性，让开发者可以在编译期动态修改&#x2F;生成代码，为开发工作提供了很大的灵活性。到了Scala 2.12，Scala Macro 基本上没有太多变化，并且直到目前为止，Scala Macro 一直被打着EXPERIMENTAL标签。据scala官网介绍，scala3的目前披露的计划中，scala Macros">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2018-07-04T06:09:15.000Z">
+<meta property="article:modified_time" content="2020-03-25T10:24:48.088Z">
+<meta property="article:author" content="Mandy">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://yoursite.com/2018/07/04/technique-sharing/2018/scala-macros-20180704/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Macros 的一个简单入门教程 | 技术分享</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">技术分享</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+  <a href="https://github.com/jiezaizone" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/07/04/technique-sharing/2018/scala-macros-20180704/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Mandy">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="技术分享">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Macros 的一个简单入门教程
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2018-07-04 14:09:15" itemprop="dateCreated datePublished" datetime="2018-07-04T14:09:15+08:00">2018-07-04</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-03-25 18:24:48" itemprop="dateModified" datetime="2020-03-25T18:24:48+08:00">2020-03-25</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h3 id="Macros-何去何从"><a href="#Macros-何去何从" class="headerlink" title="Macros 何去何从"></a>Macros 何去何从</h3><p>Scala Macro 是 Scala 2.10 版本增加的一个新的语言特性，让开发者可以在编译期动态修改/生成代码，为开发工作提供了很大的灵活性。到了Scala 2.12，Scala Macro 基本上没有太多变化，并且直到目前为止，Scala Macro 一直被打着EXPERIMENTAL标签。据scala官网介绍，scala3的目前披露的计划中，scala Macros 可能会被官方抛弃，取而代之的是 Dotty 中的重新实现 。<br>有兴趣的同学可以参考：<a href="https://www.scala-lang.org/blog/2018/04/30/in-a-nutshell.html" target="_blank" rel="noopener">https://www.scala-lang.org/blog/2018/04/30/in-a-nutshell.html</a> 学习为何要被抛弃替代的原因：</p>
+<ol>
+<li>macro 的实现完全依赖于当前的scala编译器(nsc)， 但scala3.0 将使用全新的scala编译器(dotc) </li>
+<li>macro 的实现缺少基础语法，与scala3.0的规范不一致，将会使用Principled Meta Programming<br>进行替代相关语法实现。 <a href="http://dotty.epfl.ch/docs/reference/principled-meta-programming.html" target="_blank" rel="noopener">http://dotty.epfl.ch/docs/reference/principled-meta-programming.html</a> </li>
+</ol>
+<p>基于以上两个关键原因，scala macros  将被重构至 Tasty 中。<br> <a id="more"></a></p>
+<h3 id="Macros-爱恨交加"><a href="#Macros-爱恨交加" class="headerlink" title="Macros 爱恨交加"></a>Macros 爱恨交加</h3><p>优点: 显著简化了代码分析和代码生成，这使得它们成为处理大量现实用例的一种可选工具。传统上涉及编写和维护样板的场合可用宏以简单且易维护的方式实现。比如我们常见的实现情景：  jsonPaser 在json的处理上， 使用macro 通过生成样板代码实现，并且效率较高</p>
+<ul>
+<li>缺点: </li>
+</ul>
+<ol>
+<li>编写复杂</li>
+<li>调试麻烦</li>
+<li>编译速度变慢</li>
+<li>编译文件变大</li>
+</ol>
+<ul>
+<li>优点：</li>
+</ul>
+<ol>
+<li>可以用于优化某些特定场景，例如 json转换和resultSet转换</li>
+</ol>
+<h3 id="Talk-is-cheap-Show-me-the-code"><a href="#Talk-is-cheap-Show-me-the-code" class="headerlink" title="Talk is cheap. Show me the code"></a>Talk is cheap. Show me the code</h3><h4 id="HelloWorld"><a href="#HelloWorld" class="headerlink" title="HelloWorld"></a>HelloWorld</h4><p>LibraryMacros.scala</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> java.util.<span class="type">Date</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> scala.reflect.macros.blackbox.<span class="type">Context</span></span><br><span class="line"><span class="keyword">import</span> scala.language.experimental.macros</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">object</span> <span class="title">LibraryMacros</span> </span>&#123;</span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">greeting</span></span>: <span class="type">String</span> = macro greetingMacro</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">greetingMacro</span></span>(c: <span class="type">Context</span>): c.<span class="type">Tree</span> = &#123;</span><br><span class="line">    <span class="keyword">import</span> c.universe._</span><br><span class="line"></span><br><span class="line">    <span class="keyword">val</span> now = <span class="keyword">new</span> <span class="type">Date</span>().toString</span><br><span class="line"></span><br><span class="line">    <span class="string">q""</span><span class="string">"</span></span><br><span class="line"><span class="string">     "</span><span class="type">Hi</span>! <span class="type">This</span> code was compiled at <span class="string">" +</span></span><br><span class="line"><span class="string">     $now</span></span><br><span class="line"><span class="string">     "</span><span class="string">""</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>HelloMacros.scala</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">object</span> <span class="title">HelloMacros</span> <span class="keyword">extends</span> <span class="title">App</span> </span>&#123;</span><br><span class="line">  <span class="keyword">import</span> <span class="type">LibraryMacros</span>._</span><br><span class="line"></span><br><span class="line">  </span><br><span class="line">  <span class="comment">/**</span></span><br><span class="line"><span class="comment">  * 执行结果将会是 : Hi! This code was compiled at $&#123;HelloMacros的编译时间&#125;</span></span><br><span class="line"><span class="comment">  * </span></span><br><span class="line"><span class="comment">  * 编译的过程如下：</span></span><br><span class="line"><span class="comment">  *   当编译器在编遇到方法调用greeting时会进行函数符号解析,在LibraryMacros 里发现greeting是个macro，它的具体实现在greetingMacro函数里.</span></span><br><span class="line"><span class="comment">  *   此时编译器会运行greetingMacro函数并将运算结果-一个Scala的抽象语法树(AST) ， 编译器会就着新插入的 AST 继续执行编译，达到在编译期动态修改/生成代码 的目的</span></span><br><span class="line"><span class="comment">  * </span></span><br><span class="line"><span class="comment">  * 经过反编译得到的结果如下：</span></span><br><span class="line"><span class="comment">  *     public final void delayedEndpoint$HelloMacros$1() &#123;</span></span><br><span class="line"><span class="comment">  *         Predef$.MODULE$.println("Hi! This code was compiled at Wed Jul 04 15:49:40 CST 2018");</span></span><br><span class="line"><span class="comment">  *     &#125;</span></span><br><span class="line"><span class="comment">  */</span></span><br><span class="line">  println(greeting)</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="教程分享"><a href="#教程分享" class="headerlink" title="教程分享"></a>教程分享</h4><p>大家可以参考<a href="https://github.com/underscoreio/essential-macros" target="_blank" rel="noopener">https://github.com/underscoreio/essential-macros</a><br>由浅入深，从各个方面介绍了如何进行一步步的macro编程步骤，建议大家按照以下顺序进行阅读与尝试</p>
+<ul>
+<li><p>hello - 在打印的消息中嵌入了一个编译时间戳，以证明它是在编译时执行的。 这与在运行时打印时间戳的常规代码形成对比。</p>
+</li>
+<li><p>maximum - 简单的项目演示基本设置。 最大的宏本身并不是特别有用，但该项目是各种概念的一个很好的例子。</p>
+</li>
+<li><p>printtree - 使用showCode和showRaw的宏来打印Scala代码的任意片段的desugared语法和底层树结构。 有利于在编写Macro程序之前进行研究。</p>
+</li>
+<li><p>simpleassert - Macros宏使用quasiquotes展示在树上的简单模式匹配。 稍微改进的Scala内置断言方法版本，可以打印断言中涉及的各种值。</p>
+</li>
+<li><p>betterassert - 使用模式匹配和树遍历演示更高级的树检查。 simpleassert的改进版本，可在更广泛的案例中打印有用的调试信息。</p>
+</li>
+<li><p>printtype - 通用Macros系列，可以打印有关其类型参数的各种信息。有利于在编写Macro程序期间进行调试与研究</p>
+</li>
+<li><p>orderings - 代码生成Macros，用于检查类型并创建允许按任何字段排序的对象。 例如，在编写允许用户通过返回数据中的任何字段对数据库进行排序的Web服务时，此技术非常有用。</p>
+</li>
+<li><p>enumerations - 生成一系列的 sealed trait, 用于创建你自己的枚举对象 </p>
+</li>
+<li><p>whitebox - 简单的项目展示了whitebox和blackbox宏之间的根本区别。</p>
+</li>
+<li><p>validation - 验证库的代码设计工具，使用错误字段的名称自动标记错误。 一个重要的属性是Macros被实现为可链接的方法调用而不是顶级函数。</p>
+</li>
+<li><p>csv - 用于CSV序列化的基于类型的代码库的设计工具。 隐式Macros用于支持案例类的类型类实例的自动实现。</p>
+</li>
+</ul>
+<h4 id="scala-sql-对于macro的应用"><a href="#scala-sql-对于macro的应用" class="headerlink" title="scala-sql 对于macro的应用"></a>scala-sql 对于macro的应用</h4><p>scala-sql中 对于macro的应用分为两块</p>
+<ol>
+<li>第一块为 ResultSetMapper 的生成，通过生成代码，解决了 每个bean都需要一个ResultSetMapper[T]的痛点</li>
+<li>BeanBuilder 的转换工作，解决了 case class 的转换</li>
+</ol>
+
+    </div>
+
+    
+    
+    
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Mandy
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="http://yoursite.com/2018/07/04/technique-sharing/2018/scala-macros-20180704/" title="Macros 的一个简单入门教程">http://yoursite.com/2018/07/04/technique-sharing/2018/scala-macros-20180704/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item"></div>
+      <div class="post-nav-item">
+    <a href="/2018/07/09/technique-sharing/2018/Nginx+Lua%E6%90%AD%E5%BB%BA%E7%81%B0%E5%BA%A6%E7%B3%BB%E7%BB%9F/" rel="next" title="Nginx+Lua搭建灰度系统">
+      Nginx+Lua搭建灰度系统 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#Macros-何去何从"><span class="nav-number">1.</span> <span class="nav-text">Macros 何去何从</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Macros-爱恨交加"><span class="nav-number">2.</span> <span class="nav-text">Macros 爱恨交加</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Talk-is-cheap-Show-me-the-code"><span class="nav-number">3.</span> <span class="nav-text">Talk is cheap. Show me the code</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#HelloWorld"><span class="nav-number">3.1.</span> <span class="nav-text">HelloWorld</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#教程分享"><span class="nav-number">3.2.</span> <span class="nav-text">教程分享</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#scala-sql-对于macro的应用"><span class="nav-number">3.3.</span> <span class="nav-text">scala-sql 对于macro的应用</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Mandy</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">22</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">18</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/jiezaizone" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;jiezaizone" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Mandy</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://mist.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","model":{"scale":1,"hHeadPos":0.5,"vHeadPos":0.618,"jsonPath":"/live2dw/assets/shizuku.model.json"},"display":{"superSample":2,"width":150,"height":300,"position":"left","hOffset":0,"vOffset":-20},"mobile":{"show":false,"scale":0.5},"react":{"opacityDefault":0.7,"opacityOnHover":0.2},"log":false,"tagMode":false});</script></body>
+</html>

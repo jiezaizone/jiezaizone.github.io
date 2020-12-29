@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"yoursite.com","root":"/","scheme":"Mist","version":"7.7.2","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="外链：为什么使用confluence？ 版本：Atlassian Confluence 6.3.1  一、Confluence简介Confluence是一个企业级的Wiki软件，可用于在企业、部门、团队内部进行信息共享和协同编辑。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Confluence开发者教程">
+<meta property="og:url" content="http://yoursite.com/2020/03/26/technique-sharing/2020/Confluence%E5%BC%80%E5%8F%91%E8%80%85%E6%95%99%E7%A8%8B/index.html">
+<meta property="og:site_name" content="技术分享">
+<meta property="og:description" content="外链：为什么使用confluence？ 版本：Atlassian Confluence 6.3.1  一、Confluence简介Confluence是一个企业级的Wiki软件，可用于在企业、部门、团队内部进行信息共享和协同编辑。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://yoursite.com/images/20191115141617777.png">
+<meta property="og:image" content="http://yoursite.com/images/2019111514172047.png">
+<meta property="og:image" content="http://yoursite.com/images/20191115141759727.png">
+<meta property="og:image" content="http://yoursite.com/images/20191115141859333.png">
+<meta property="og:image" content="http://yoursite.com/images/2019111514204243.png">
+<meta property="og:image" content="http://yoursite.com/images/20191115142129799.png">
+<meta property="og:image" content="http://yoursite.com/images/20191115142145441.png">
+<meta property="og:image" content="http://yoursite.com/images/20191115142255424.png">
+<meta property="og:image" content="http://yoursite.com/images/20191115142338772.png">
+<meta property="og:image" content="http://yoursite.com/images/20191115142418741.png">
+<meta property="og:image" content="http://yoursite.com/images/2019111514254892.png">
+<meta property="og:image" content="http://yoursite.com/images/20191115142607965.png">
+<meta property="og:image" content="http://yoursite.com/images/20191115142620952.png">
+<meta property="og:image" content="http://yoursite.com/images/20191115142705591.png">
+<meta property="og:image" content="http://yoursite.com/images/20191115142751374.png">
+<meta property="og:image" content="http://yoursite.com/images/20191115142824300.png">
+<meta property="og:image" content="http://yoursite.com/images/20191115142908257.png">
+<meta property="og:image" content="http://yoursite.com/images/20191115142930420.png">
+<meta property="og:image" content="http://yoursite.com/images/20191115143010490.png">
+<meta property="article:published_time" content="2020-03-26T08:52:03.000Z">
+<meta property="article:modified_time" content="2020-03-27T02:15:35.269Z">
+<meta property="article:author" content="Mandy">
+<meta property="article:tag" content="wiki">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://yoursite.com/images/20191115141617777.png">
+
+<link rel="canonical" href="http://yoursite.com/2020/03/26/technique-sharing/2020/Confluence%E5%BC%80%E5%8F%91%E8%80%85%E6%95%99%E7%A8%8B/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Confluence开发者教程 | 技术分享</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">技术分享</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+  <a href="https://github.com/jiezaizone" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/03/26/technique-sharing/2020/Confluence%E5%BC%80%E5%8F%91%E8%80%85%E6%95%99%E7%A8%8B/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Mandy">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="技术分享">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Confluence开发者教程
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-03-26 16:52:03" itemprop="dateCreated datePublished" datetime="2020-03-26T16:52:03+08:00">2020-03-26</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-03-27 10:15:35" itemprop="dateModified" datetime="2020-03-27T10:15:35+08:00">2020-03-27</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <hr>
+<p> <strong>外链</strong>：<a href="https://blog.csdn.net/u011456337/article/details/103085058" target="_blank" rel="noopener">为什么使用confluence？</a></p>
+<p><strong>版本</strong>：Atlassian Confluence 6.3.1</p>
+<hr>
+<h3 id="一、Confluence简介"><a href="#一、Confluence简介" class="headerlink" title="一、Confluence简介"></a>一、Confluence简介</h3><p>Confluence是一个企业级的Wiki软件，可用于在企业、部门、团队内部进行信息共享和协同编辑。</p>
+<a id="more"></a>
+
+<hr>
+<h4 id="1-1、能做什么？"><a href="#1-1、能做什么？" class="headerlink" title="1.1、能做什么？"></a>1.1、能做什么？</h4><p>团队将日常的工作任务进度管理、技术知识分享、开发文档、操作手册、文档附件都放置入Confluence中进行统一管理，富文本编辑器使文档内容支持更加丰富，（一般confluence配套使用jira，jira专注于项目bug管理，更多请【百度jira】）</p>
+<h4 id="1-2、基础概念"><a href="#1-2、基础概念" class="headerlink" title="1.2、基础概念"></a>1.2、基础概念</h4><p>Confluence的使用并不复杂，只需掌握如下几个基础概念。空间（Space）空间是Confluence系统中的一个区域，用于存储wiki页面，并可实现对空间中的所有文档进行统一的权限管理。<br>通常，我们可以针对每个项目单独创建一个空间，然后将与该项目相关的文档信息放置到该空间中，并只对项目成员开设访问/编辑权限。<br>除了项目空间，每个成员都有一个个人空间。平时成员可以将工作总结或笔记等文档放置到自己的空间中；对于对团队有帮助的文档，就可以将文档移动至团队项目空间中。</p>
+<h5 id="1-2-1、Dashboard"><a href="#1-2-1、Dashboard" class="headerlink" title="1.2.1、Dashboard"></a>1.2.1、Dashboard</h5><p>Dashboard是Confluence系统的主页，在Dashboard界面中包含了Confluence站点中的所有空间列表，以及最近更新内容的列表。</p>
+<h5 id="1-2-2、页面（Page）"><a href="#1-2-2、页面（Page）" class="headerlink" title="1.2.2、页面（Page）"></a>1.2.2、页面（Page）</h5><p>在Confluence系统中，页面是存储和共享信息的主要方式。<br>页面可以互相链接、连接、组织和访问，并以树状结构进行组织，放置于空间之中。页面遵循所见即所得的编辑方式，操作上简单易用。更强大的地方在于，页面支持大量的内容展现形式，除了富文本文档外，还包括图表、视频、附件（可预览）、流程图、公式等等；如果还不够，还可以通过海量的第三方插件进行扩展。<br>在页面中可以通过@其它成员，通知相关成员查看文档。文档保存成功后，被@的成员就会收到邮件，并可根据邮件中的链接访问到该文档，然后进行评论或者协同编辑。</p>
+<h5 id="1-2-3、模板（template）"><a href="#1-2-3、模板（template）" class="headerlink" title="1.2.3、模板（template）"></a>1.2.3、模板（template）</h5><p>创建页面时除了采用空白文档，也可以选择模板。模板是在空白文档的基础上，根据特定需求添加了一些文档要素，可辅助用户更好更快地创建文档。<br>Confluence内置了大量的模板，可辅助用于项目工作的各个环节，包括产品需求、会议记录、决策记录、指导手册（How-to）、回顾记录、工作计划、任务报告等等。并且由于Confluence和JIRA是同一家公司的产品，在Confluence中可以和JIRA进行无缝衔接，实现对产品质量实现更好的展现。<br>如果对Confluence自带的模板不满意，还可以对模板进行调整，或者根据自己的需求创建其它类型的模板。</p>
+<h5 id="1-2-4、权限（Permission）"><a href="#1-2-4、权限（Permission）" class="headerlink" title="1.2.4、权限（Permission）"></a>1.2.4、权限（Permission）</h5><p>在安全性方面，Confluence具有完善和精细的权限控制，可以很好地控制用户在Wiki中创建、编辑内容和添加注释。<br>权限控制分3个维度，分别是团队（Group），个人（Individual Users），匿名用户（Anonymous）。<br>使用团队级的权限控制时，需要在Confluence服务器中对公司员工进行分组，好处在于配置比较方便，只需要对整个团队进行统一的权限配置。<br>但在实际项目中，经常会存在同一个项目包含多个跨团队成员的情况，这个时候就不适合采用团队权限配置方式，只能采用逐个添加成员的方式，并对各个成员分别配置权限。<br>另外一种情况，就是对于未登录的用户，以及项目成员以外的用户，可以开设部分权限，例如只读（View）。</p>
+<hr>
+<h3 id="二、常见操作"><a href="#二、常见操作" class="headerlink" title="二、常见操作"></a>二、常见操作</h3><p>熟悉了Confluence的基础概念，基本上就可以摸索着对Confluence进行上手了。不过，为了减少摸索时间，在这里我再将Confluence中的常用操作进行说明。</p>
+<h4 id="2-1、文档查看与操作"><a href="#2-1、文档查看与操作" class="headerlink" title="2.1、文档查看与操作"></a>2.1、文档查看与操作</h4><p>用户账户登录首页-&gt;选择要查看的【空间】-&gt;【****开发项目管理】-&gt;【项目管理】-&gt;选择对应的项目→查看您想看的文档<br><img src="/images/20191115141617777.png" alt=""></p>
+<h4 id="2-2、添加文档"><a href="#2-2、添加文档" class="headerlink" title="2.2、添加文档"></a>2.2、添加文档</h4><p>在Confluence中文件以树状结构进行组织。<br>推荐的创建方式是，先进入父目录的页面，然后再点击【Create】进行创建。在创建文档页面中，可以看到新建文档的“父级”，表示新文档创建后将位于“父级”文件的下一个层级中。</p>
+<p>在新建文档时，需要选择文档模板。这个就根据文档的实际类型或用途进行选择即可，如果觉得都不合适，就选择“Blank page”。<br><img src="/images/2019111514172047.png" alt=""></p>
+<h4 id="2-3、编写文档"><a href="#2-3、编写文档" class="headerlink" title="2.3、编写文档"></a>2.3、编写文档</h4><p>在编写文档时，页面遵循所见即所得的编辑方式，基本上跟在MS Word中的操作类似。<br>Confluence也集成了许多编辑工具，可以很方便地插入图表、链接、附件、代办列表等等。如果还不满足需求，可以点击【插入】-&gt;【其他宏】，查找更多的扩展插件。<br><img src="/images/20191115141759727.png" alt=""></p>
+<ul>
+<li>2.3.1、 选择【格式化】-&gt;【代码块】-&gt;【语法高亮】-&gt;自由选择风格【选择sql】-&gt;自由选择主题【选择】-&gt;【emacs】,接着确认，即可插入sql<br><img src="/images/20191115141859333.png" alt=""></li>
+</ul>
+<p><img src="/images/2019111514204243.png" alt=""></p>
+<ul>
+<li>2.3.2、 插入表格，插入开发状态颜色，点击【+】-&gt;选择【状态】<br><img src="/images/20191115142129799.png" alt=""><ul>
+<li>2.3.3、 插入图片和附件 选择【插入文件和图片】<br>例如，Confluence默认是不支持Markdown编辑模式的，如果想采用Markdown来编写文档，就可以通过上述方式到插件市场寻找Markdown的插件。<br>不过根据实践发现，当前Confluence的Markdown插件支持的还不够好，使用体验上不尽如人意。比较推荐的做法，还是在单独的Markdown编辑器上采用markdown语法进行编辑，编辑完成后进行预览，然后将渲染后的文档内容复制粘贴到Confluence中。<br><img src="/images/20191115142145441.png" alt=""></li>
+<li>2.3.4、移动文档<br>很多时候我们需要调整目录结构，这就涉及到需要将文档移动到别的目录层级下。<br>操作方式如下：先进入到待移动的文档页面中，点击页面右上角的【…】-&gt;【移动】；<br>然后选择移动到新的目录即可。<br><img src="/images/20191115142255424.png" alt=""></li>
+</ul>
+</li>
+</ul>
+<h4 id="2-4、创建目录"><a href="#2-4、创建目录" class="headerlink" title="2.4、创建目录"></a>2.4、创建目录</h4><p>与创建文档方式一致，直接创建标题保存即可</p>
+<h4 id="2-5、模板方式创建文档"><a href="#2-5、模板方式创建文档" class="headerlink" title="2.5、模板方式创建文档"></a>2.5、模板方式创建文档</h4><p> 选择【以层级方式查看】-&gt;[模板]-&gt;【编辑】<br> <img src="/images/20191115142338772.png" alt=""><br> <img src="/images/20191115142418741.png" alt=""></p>
+<h3 id="三、发表评论"><a href="#三、发表评论" class="headerlink" title="三、发表评论"></a>三、发表评论</h3><p><img src="/images/2019111514254892.png" alt=""></p>
+<h3 id="四、上传文档附件"><a href="#四、上传文档附件" class="headerlink" title="四、上传文档附件"></a>四、上传文档附件</h3><p>样例<br><img src="/images/20191115142607965.png" alt=""></p>
+<h3 id="五、导出"><a href="#五、导出" class="headerlink" title="五、导出"></a>五、导出</h3><p><img src="/images/20191115142620952.png" alt=""></p>
+<h3 id="六、文档权限管理"><a href="#六、文档权限管理" class="headerlink" title="六、文档权限管理"></a>六、文档权限管理</h3><p>选择【…】-&gt;【限制】<br><img src="/images/20191115142705591.png" alt=""></p>
+<h3 id="七、创建空间"><a href="#七、创建空间" class="headerlink" title="七、创建空间"></a>七、创建空间</h3><p>新建一个项目时，首先要做的就是创建一个空间，并进行初始化配置。<br>创建空间的方式很简单，可以从顶部菜单进行创建：【空间】-&gt;【创建】；也可以从Dashboard页面的Spaces页面中进行创建。<br><img src="/images/20191115142751374.png" alt=""></p>
+<ol>
+<li>进入创建空间页面后，需要选择空间类型。这个需要根据空间的用途进行选择，对于团队协作的空间，推荐选择“Team Space”，如果实在不知道选择什么类型，选择“Blank Space”也是可以的。</li>
+<li>然后是填写空间的基本信息。所有类型的空间都有两个必填字段，空间名和空间标识符。空间标识符可以理解为空间的ID，不同空间的空间标识符不能重复，但空间名是可以重复的。</li>
+<li>另外，对于“Team Space”类型的空间，多了一个“Team members”字段，用于添加空间的成员。成员的名称是其公司邮箱的前缀。<br>需要说明的是，空间创建完成后，Space key字段是不能修改的，其它字段以及团队成员都可以进行修改。<br><img src="/images/20191115142824300.png" alt=""><br><img src="/images/20191115142908257.png" alt=""><h3 id="八、配置空间权限"><a href="#八、配置空间权限" class="headerlink" title="八、配置空间权限"></a>八、配置空间权限</h3>创建空间后，根据项目需要，可以给空间设置权限。只有空间的管理员才能对空间权限进行配置。<br>操作方式如下：首先进入空间的页面，在空间左下角中，【空间管理】-&gt;【权限】，进入权限管理页面。</li>
+</ol>
+<p>Confluence的权限控制比较完善，可以根据团队规范进行较为精细粒度的设置。<br><img src="/images/20191115142930420.png" alt=""><br><img src="/images/20191115143010490.png" alt=""></p>
+
+    </div>
+
+    
+    
+    
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>罗三
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="http://yoursite.com/2020/03/26/technique-sharing/2020/Confluence%E5%BC%80%E5%8F%91%E8%80%85%E6%95%99%E7%A8%8B/" title="Confluence开发者教程">http://yoursite.com/2020/03/26/technique-sharing/2020/Confluence开发者教程/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/wiki/" rel="tag"># wiki</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/01/14/technique-sharing/2020/%E6%97%A0%E7%BC%9D%E6%BB%9A%E5%8A%A8/" rel="prev" title="无缝滚动">
+      <i class="fa fa-chevron-left"></i> 无缝滚动
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2020/03/26/technique-sharing/2020/Git%E5%BC%80%E5%8F%91%E8%80%85%E6%95%99%E7%A8%8B/" rel="next" title="Git开发者教程">
+      Git开发者教程 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#一、Confluence简介"><span class="nav-number">1.</span> <span class="nav-text">一、Confluence简介</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-1、能做什么？"><span class="nav-number">1.1.</span> <span class="nav-text">1.1、能做什么？</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-2、基础概念"><span class="nav-number">1.2.</span> <span class="nav-text">1.2、基础概念</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#1-2-1、Dashboard"><span class="nav-number">1.2.1.</span> <span class="nav-text">1.2.1、Dashboard</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#1-2-2、页面（Page）"><span class="nav-number">1.2.2.</span> <span class="nav-text">1.2.2、页面（Page）</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#1-2-3、模板（template）"><span class="nav-number">1.2.3.</span> <span class="nav-text">1.2.3、模板（template）</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#1-2-4、权限（Permission）"><span class="nav-number">1.2.4.</span> <span class="nav-text">1.2.4、权限（Permission）</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#二、常见操作"><span class="nav-number">2.</span> <span class="nav-text">二、常见操作</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#2-1、文档查看与操作"><span class="nav-number">2.1.</span> <span class="nav-text">2.1、文档查看与操作</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-2、添加文档"><span class="nav-number">2.2.</span> <span class="nav-text">2.2、添加文档</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-3、编写文档"><span class="nav-number">2.3.</span> <span class="nav-text">2.3、编写文档</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-4、创建目录"><span class="nav-number">2.4.</span> <span class="nav-text">2.4、创建目录</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-5、模板方式创建文档"><span class="nav-number">2.5.</span> <span class="nav-text">2.5、模板方式创建文档</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#三、发表评论"><span class="nav-number">3.</span> <span class="nav-text">三、发表评论</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#四、上传文档附件"><span class="nav-number">4.</span> <span class="nav-text">四、上传文档附件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#五、导出"><span class="nav-number">5.</span> <span class="nav-text">五、导出</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#六、文档权限管理"><span class="nav-number">6.</span> <span class="nav-text">六、文档权限管理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#七、创建空间"><span class="nav-number">7.</span> <span class="nav-text">七、创建空间</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#八、配置空间权限"><span class="nav-number">8.</span> <span class="nav-text">八、配置空间权限</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Mandy</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">22</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">18</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/jiezaizone" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;jiezaizone" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Mandy</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://mist.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","model":{"scale":1,"hHeadPos":0.5,"vHeadPos":0.618,"jsonPath":"/live2dw/assets/shizuku.model.json"},"display":{"superSample":2,"width":150,"height":300,"position":"left","hOffset":0,"vOffset":-20},"mobile":{"show":false,"scale":0.5},"react":{"opacityDefault":0.7,"opacityOnHover":0.2},"log":false,"tagMode":false});</script></body>
+</html>
